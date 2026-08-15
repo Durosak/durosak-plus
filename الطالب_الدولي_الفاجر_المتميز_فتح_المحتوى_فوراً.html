@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دروسك بلس - منصة التعليم الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #7c3aed, #4c1d95); min-height: 100vh; margin: 0; padding: 0; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 15px 25px; border-radius: 10px; color: white; font-weight: bold; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        .toast-error { background: #dc2626; }
+        .toast-success { background: #16a34a; }
+        
+        /* تصميم الكارت بالطول مع خلفية زرقاء فاتحة */
+        .content-card { background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 24px; padding: 24px; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 16px; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .content-card:hover { border-color: #0284c7; transform: translateY(-2px); box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15); }
+        
+        .floating-chat-btn { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5); cursor: pointer; z-index: 998; transition: all 0.3s; }
+        .floating-chat-btn:hover { transform: scale(1.1); background: #6d28d9; }
+        
+        @keyframes floatWatermark {
+            0% { top: 10%; left: 10%; opacity: 0.8; }
+            25% { top: 70% ; left: 60%; opacity: 0.3; }
+            50% { top: 40%; left: 80%; opacity: 0.7; }
+            75% { top: 80%; left: 20%; opacity: 0.4; }
+            100% { top: 15% ; left: 50%; opacity: 0.8; }
+        }
+        .video-watermark {
+            position: absolute;
+            z-index: 9999;
+            background: transparent !important;
+            color: rgba(251, 191, 36, 0.75);
+            padding: 0;
+            border-radius: 0;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatWatermark 15s infinite linear;
+            white-space: nowrap;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+            box-shadow: none !important;
+        }
+
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800 flex items-center justify-center min-h-screen p-0" oncontextmenu="return false;">
+<!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen" class="glass p-8 rounded-2xl shadow-2xl max-w-md w-full text-center mx-4">
+        <div class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-purple-950 mb-2">دروسك بلس</h1>
+        <p class="text-sm text-gray-600 mb-6">أدخل كود الدخول الخاص بك للمتابعة</p>
+        
+        <div class="space-y-4 text-right">
+            <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"><i class="fas fa-user ml-1 text-purple-600"></i>اسم الطالب:</label>
+                <input type="text" id="studentNameInput" placeholder="ادخل اسمك الكامل" class="w-full p-3 border rounded-xl">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"><i class="fas fa-phone ml-1 text-purple-600"></i>رقم الهاتف:</label>
+                <input type="tel" id="studentPhoneInput" inputmode="numeric" maxlength="11" placeholder="01xxxxxxxxx" class="w-full p-3 border rounded-xl">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"><i class="fas fa-lock ml-1 text-purple-600"></i>كود الدخول:</label>
+                <p class="text-[11px] text-gray-500 mb-1">الكود يعمل فقط على عدد الأجهزة الذي حدده الأدمن.</p>
+                <input type="text" id="studentCodeInput" placeholder="أدخل الكود" class="w-full p-3 border rounded-xl font-mono text-center tracking-widest text-lg">
+            </div>
+            <button onclick="loginStudent()" class="w-full bg-purple-600 text-white p-3 rounded-xl font-bold hover:bg-purple-700 transition shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-sign-in-alt text-lg"></i>دخول المنصة
+            </button>
+        </div>
+
+        <hr class="my-6 border-gray-300">
+
+        <div class="space-y-3">
+            <button onclick="openPricesModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold transition shadow-md text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-coins text-lg"></i>اعرف الأسعار
+            </button>
+            <button onclick="openRequestCodeModal()" class="w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-xl font-bold transition shadow-md text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-key text-lg"></i>محتاج كود (ادفع الآن)
+            </button>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي بعد الدخول -->
+    <div id="mainApp" class="hidden min-h-screen flex flex-col w-full bg-white shadow-2xl overflow-hidden">
+        <header class="bg-purple-900 text-white px-6 py-4 shadow-md flex justify-between items-center relative w-full">
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold"><i class="fas fa-crown text-yellow-400 ml-2"></i>دروسك بلس</h1>
+                <span id="headerStudentSection" class="bg-purple-700 text-purple-200 text-xs font-bold px-3 py-1 rounded-full border border-purple-500">جاري التحميل...</span>
+            </div>
+            <button type="button" onclick="openStudentProfile()" title="الملف الشخصي"
+                class="w-11 h-11 bg-purple-700 hover:bg-purple-600 rounded-full flex items-center justify-center text-white border border-purple-400 transition shadow">
+                <i class="fas fa-user-circle text-2xl"></i>
+            </button>
+        </header>
+
+        <main class="flex-1 p-6 md:p-10 w-full max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6 border-b pb-3 w-full">
+                <h3 class="text-xl font-bold text-purple-950" id="currentSectionTitle"><i class="fas fa-book-open ml-2 text-purple-600"></i>محتوى المادة</h3>
+                <button id="backButton" onclick="goBackOneStep()" class="hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg text-sm font-bold transition">
+                    <i class="fas fa-arrow-right ml-1"></i>الرجوع للخلف
+                </button>
+            </div>
+            <!-- الحاوية مرتبة بالطول بالشكل المطلوب -->
+            <div id="studentContentList" class="flex flex-col space-y-5 w-full">
+                <p class="text-center text-purple-600 font-bold py-10 text-lg"><i class="fas fa-fire fa-spin ml-2 text-amber-500"></i>اصبر ي دولي والمحتوى هيظهر العظمه بتحمل...</p>
+            </div>
+        </main>
+
+        <div class="floating-chat-btn" onclick="openChatModal()" title="تواصل مع الأدمن">
+            <i class="fas fa-comments"></i>
+        </div>
+    </div>
+
+    <!-- نافذة بروفيل الطالب الشخصي مع زر الإحصائيات -->
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-right shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-lg text-purple-950"><i class="fas fa-user-circle text-purple-600 ml-2"></i>ملف الطالب</h3>
+                <button onclick="closeProfileModal()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 space-y-3">
+                <p class="text-sm"><b><i class="fas fa-key ml-1 text-purple-600"></i>كود الدخول:</b> <span id="modalStudentCode" class="font-mono font-bold text-purple-900">-</span></p>
+                <p class="text-sm"><b><i class="fas fa-graduation-cap ml-1 text-purple-600"></i>الشعبة:</b> <span id="modalStudentSection" class="text-purple-900 font-bold">-</span></p>
+                <p class="text-sm"><b><i class="fas fa-clock ml-1 text-purple-600"></i>الوقت المتبقي للكود:</b> <span id="modalStudentTimeLeft" class="text-emerald-700 font-bold">-</span></p>
+            </div>
+            <div class="space-y-2">
+                <button onclick="openStatsModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-chart-line"></i>إحصائياتي (الفيديوهات والامتحانات)
+                </button>
+                <button onclick="closeProfileModal()" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-2.5 rounded-xl font-bold text-sm">إغلاق</button>
+                <button onclick="logoutStudent()" class="w-full bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إحصائيات الطالب -->
+    <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 text-right shadow-2xl max-h-[85vh] overflow-y-auto space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-lg text-purple-950"><i class="fas fa-chart-bar text-emerald-600 ml-2"></i>إحصائيات الطالب ونتائجه</h3>
+                <button onclick="closeStatsModal()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div>
+                <h4 class="font-bold text-purple-900 text-sm mb-2"><i class="fas fa-video ml-1 text-red-600"></i>الفيديوهات التي شوهدت:</h4>
+                <div id="watchedVideosList" class="space-y-2 bg-gray-50 p-3 rounded-xl border max-h-40 overflow-y-auto">
+                    <p class="text-xs text-gray-500 text-center">لا توجد مشاهدات حتى الآن</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-purple-900 text-sm mb-2"><i class="fas fa-clipboard-check ml-1 text-purple-600"></i>نتائج الاختبارات:</h4>
+                <div id="examResultsList" class="space-y-2 bg-gray-50 p-3 rounded-xl border max-h-40 overflow-y-auto">
+                    <p class="text-xs text-gray-500 text-center">لم تقم بأي اختبارات بعد</p>
+                </div>
+            </div>
+
+            <button onclick="closeStatsModal()" class="w-full bg-gray-700 hover:bg-gray-800 text-white p-2.5 rounded-xl font-bold text-sm">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة عرض ملف الـ PDF -->
+    <div id="pdfModal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center p-0">
+        <div class="relative w-full h-full bg-black flex flex-col justify-center">
+            <div class="flex justify-between items-center p-3 bg-gray-900 text-white">
+                <h3 class="font-bold" id="pdfModalTitle">قراءة ملف PDF</h3>
+                <button onclick="closePdfModal()" class="text-red-400 hover:text-red-300 text-2xl font-bold px-3">&times;</button>
+            </div>
+            <div class="relative w-full flex-1 bg-gray-900 flex items-center justify-center">
+                <iframe id="pdfViewerSlot" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة أداء الامتحان (نصي أو MCQ اختيار من متعدد) -->
+    <div id="examModal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 text-right shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-lg text-purple-950" id="examTitleModal">اسم الاختبار</h3>
+                <button onclick="closeExamModal()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            <div id="examContentBody" class="space-y-4 text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border">
+                <!-- محتوى الاختبار -->
+            </div>
+            <div id="examTextAnswerBox">
+                <label class="block text-xs font-bold mb-1 text-purple-900">إجابتك / حل الاختبار:</label>
+                <textarea id="examAnswerInput" rows="4" class="w-full p-3 border rounded-xl text-sm focus:outline-none focus:border-purple-600" placeholder="اكتب إجاباتك أو حلك هنا للإرسال..."></textarea>
+            </div>
+            <button id="examSubmitButton" onclick="submitExamTextAnswer()" class="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl font-bold transition shadow-md">إرسال الحل للأدمن</button>
+        </div>
+    </div>
+
+    <!-- نافذة الدردشة العائمة مع الأدمن -->
+    <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full h-[500px] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-purple-900 text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i class="fas fa-headset"></i>الدردشة والدعم الفني</h3>
+                <button onclick="closeChatModal()" class="text-white text-xl font-bold">&times;</button>
+            </div>
+            <div id="chatMessagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
+                <p class="text-center text-gray-400 text-xs py-4">أرسل رسالتك وسيرد عليك الأدمن قريباً</p>
+            </div>
+            <div class="p-3 bg-white border-t flex gap-2">
+                <input type="text" id="chatMessageInput" placeholder="اكتب رسالتك هنا..." class="flex-1 p-2.5 border rounded-xl text-sm focus:outline-none focus:border-purple-600" onkeypress="if(event.key==='Enter')sendStudentMessage()">
+                <button onclick="sendStudentMessage()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-bold transition"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة اعرف الأسعار -->
+    <div id="pricesModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-right shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-lg text-purple-950"><i class="fas fa-coins text-emerald-600 ml-2"></i>أسعار الباقات</h3>
+                <button onclick="closePricesModal()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            <!-- يتم بناء الأسعار هنا من Firebase مباشرة -->
+            <div id="studentPricesList" class="space-y-4">
+                <p class="text-center text-gray-500 py-6">جاري تحميل الأسعار...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة محتاج كود (ادفع الآن) -->
+    <div id="requestCodeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-right shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-lg text-purple-950"><i class="fas fa-mobile-alt text-red-600 ml-2"></i>محتاج كود - ادفع الآن</h3>
+                <button onclick="closeRequestCodeModal()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                <p class="text-xs text-red-600 font-bold mb-1"><i class="fas fa-info-circle ml-1"></i>حول المبلغ المطلوب على رقم فودافون كاش التالي:</p>
+                <div class="flex items-center justify-center gap-2 mt-2">
+                    <span class="text-xl font-mono font-bold text-red-800" id="vodafoneNumDisplay">01023387459</span>
+                    <button onclick="copyVodafoneNumber()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                        <i class="fas fa-copy ml-1"></i>نسخ الرقم
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fas fa-user ml-1 text-gray-600"></i>اسم الطالب الكامل:</label>
+                    <input type="text" id="reqName" class="w-full p-2.5 border rounded-lg text-sm" placeholder="ادخل اسمك">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fab fa-whatsapp ml-1 text-green-600"></i>رقم تلفون واتساب (لإرسال الكود):</label>
+                    <input type="tel" id="reqWhatsapp" inputmode="numeric" maxlength="11" class="w-full p-2.5 border rounded-lg text-sm" placeholder="01xxxxxxxxx">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fas fa-tags ml-1 text-purple-600"></i>اختر الباقة:</label>
+                    <select id="reqPackage" class="w-full p-2.5 border rounded-lg text-sm">
+                        <option value="شهر (200 ج)">جاري تحميل الأسعار...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fas fa-graduation-cap ml-1 text-purple-600"></i>اختر الشعبة:</label>
+                    <select id="reqSection" class="w-full p-2.5 border rounded-lg text-sm">
+                        <option value="science">علمي علوم</option>
+                        <option value="math">علمي رياضة</option>
+                        <option value="arts">أدبي</option>
+                        <option value="baccalaureate">باكلوريا</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fas fa-phone-alt ml-1 text-purple-600"></i>الرقم الذي تم التحويل منه (رقمك أو رقم السنترال):</label>
+                    <input type="tel" id="reqSenderPhone" inputmode="numeric" maxlength="11" class="w-full p-2.5 border rounded-lg text-sm" placeholder="01xxxxxxxxx">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1"><i class="fas fa-image ml-1 text-purple-600"></i>إرفاق سكرين التحويل <span class="text-red-600">*</span>:</label>
+                    <input type="file" id="reqScreenshot" accept="image/*" class="w-full p-2 border rounded-lg text-sm bg-gray-50" onchange="previewScreenshot(event)">
+                    <img id="screenshotPreview" class="hidden mt-2 max-h-32 rounded-lg mx-auto border">
+                </div>
+                <button onclick="submitCodeRequest()" class="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i>إرسال طلب الكود
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تشغيل الفيديو -->
+    <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center p-0">
+        <div class="relative w-full h-full bg-black flex flex-col justify-center">
+            <div class="flex justify-between items-center p-3 bg-gray-900 text-white">
+                <h3 class="font-bold" id="videoModalTitle">مشاهدة الدرس</h3>
+                <button onclick="closeVideoModal()" class="text-red-400 hover:text-red-300 text-2xl font-bold px-3">&times;</button>
+            </div>
+            <div class="relative w-full flex-1 bg-black flex items-center justify-center overflow-hidden">
+                <div id="videoWatermarkBox" class="video-watermark">طالب: - | كود: -</div>
+                <div id="videoPlayerSlot" class="w-full h-full flex items-center justify-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBB_sGz2W4HUNTPqa2FBRSFWdjvj5rakE",
+            authDomain: "tttuyu-489f9.firebaseapp.com",
+            databaseURL: "https://tttuyu-489f9-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "tttuyu-489f9",
+            storageBucket: "tttuyu-489f9.firebasestorage.app",
+            messagingSenderId: "979673717630",
+            appId: "1:979673717630:web:d82fc3a9e485437728f12f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentStudent = null;
+        loadStudentFavorites();
+        let currentParentId = 'root';
+        let navigationStack = ['root'];
+        let allContentData = {};
+        let screenshotBase64 = '';
+        let activeExamData = null;
+        let activeMcqAnswers = {};
+        let activeMcqQuestions = [];
+        let activeMcqCurrentIndex = 0;
+        let activeMcqTimerInterval = null;
+        let activeMcqTimeLeft = 0;
+        let studentFavorites = {};
+        let currentProfileSection = 'profile';
+        let codeStatusListener = null;
+        let contentLoaded = false;
+        let contentLoadError = false;
+        const STUDENT_SESSION_KEY = 'studentSession';
+        const STUDENT_DEVICE_KEY = 'deviceId';
+
+        // الأسعار تأتي من نفس المسار الذي يحفظه كود الأدمن: settings/prices
+        let studentPriceSettings = {
+            month: { enabled: true, price: 200, duration: 30, description: '30 يوم' },
+            term: { enabled: true, price: 500, duration: 90, description: 'حتى شهر 1' },
+            year: { enabled: true, price: 900, duration: 365, description: 'شاملة المراجعات النهائية' }
+        };
+
+        function escapePriceText(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+            }[ch]));
+        }
+
+        function syncRequestPackageOptions() {
+            const select = document.getElementById('reqPackage');
+            if (!select) return;
+
+            const labels = {
+                month: 'شهر (30 يوم)',
+                term: 'ترم',
+                year: 'سنوية'
+            };
+
+            const previousKey = (() => {
+                const value = select.value || '';
+                if (value.includes('شهر')) return 'month';
+                if (value.includes('ترم')) return 'term';
+                if (value.includes('سنوية')) return 'year';
+                return '';
+            })();
+
+            select.innerHTML = '';
+            Object.entries(studentPriceSettings || {}).forEach(([key, item]) => {
+                if (!item || item.enabled === false) return;
+                const price = Number(item.price) || 0;
+                const duration = Number(item.duration) || 0;
+                const value = key === 'month' ? `شهر (${price} ج)`
+                    : key === 'term' ? `ترم (${price} ج)`
+                    : `سنوية (${price} ج)`;
+                const durationText = duration ? ` (${duration} يوم)` : '';
+                select.innerHTML += `<option value="${escapePriceText(value)}">${labels[key]}${durationText} - ${price} ج</option>`;
+            });
+
+            if (!select.options.length) {
+                select.innerHTML = '<option value="">لا توجد باقات متاحة</option>';
+                return;
+            }
+
+            if (previousKey && studentPriceSettings[previousKey] && studentPriceSettings[previousKey].enabled !== false) {
+                const wanted = Number(studentPriceSettings[previousKey].price) || 0;
+                const wantedValue = previousKey === 'month' ? `شهر (${wanted} ج)`
+                    : previousKey === 'term' ? `ترم (${wanted} ج)`
+                    : `سنوية (${wanted} ج)`;
+                const idx = Array.from(select.options).findIndex(o => o.value === wantedValue);
+                if (idx >= 0) select.selectedIndex = idx;
+            }
+        }
+
+        function renderStudentPrices() {
+            syncRequestPackageOptions();
+            const list = document.getElementById('studentPricesList');
+            if (!list) return;
+
+            const p = studentPriceSettings || {};
+            const packages = [
+                { key: 'month', icon: 'fa-calendar-alt', color: 'purple', title: 'باقة شهر' },
+                { key: 'term', icon: 'fa-book-reader', color: 'purple', title: 'باقة الترم' },
+                { key: 'year', icon: 'fa-star', color: 'amber', title: 'الباقة السنوية' }
+            ];
+
+            const visible = packages.filter(x => p[x.key] && p[x.key].enabled !== false);
+
+            if (!visible.length) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-6">لا توجد باقات متاحة حالياً.</p>';
+                return;
+            }
+
+            list.innerHTML = visible.map(pkg => {
+                const item = p[pkg.key] || {};
+                const title = escapePriceText(pkg.title);
+                const duration = Number(item.duration) || 0;
+                const price = Number(item.price) || 0;
+                const desc = escapePriceText(item.description || (duration ? `${duration} يوم` : ''));
+                const packageValue = encodeURIComponent(`${pkg.key}|${price}`);
+
+                return `
+                    <div class="p-4 bg-gray-50 rounded-xl border flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-purple-900 text-base">
+                                    <i class="fas ${pkg.icon} ${pkg.color === 'amber' ? 'text-amber-500' : 'text-purple-600'} ml-1"></i>${title}${duration ? ` (${duration} يوم)` : ''}
+                                </p>
+                                <p class="text-xs text-gray-500">${desc}</p>
+                            </div>
+                            <span class="bg-purple-100 text-purple-700 font-bold px-3 py-1.5 rounded-lg text-base">${price} ج</span>
+                        </div>
+                        <button onclick="selectPackageAndRequest('${packageValue}')" class="w-full ${pkg.color === 'amber' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-purple-600 hover:bg-purple-700'} text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1">
+                            <i class="fas fa-check-circle"></i>اشتراك الآن
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        // تحديث لحظي: أي تعديل في لوحة الأدمن يظهر عند الطالب فوراً بدون تعديل كود الطالب.
+        db.ref('settings/prices').on('value', snapshot => {
+            const data = snapshot.val();
+            if (data) {
+                studentPriceSettings = {
+                    month: { ...studentPriceSettings.month, ...(data.month || {}) },
+                    term: { ...studentPriceSettings.term, ...(data.term || {}) },
+                    year: { ...studentPriceSettings.year, ...(data.year || {}) }
+                };
+            }
+            renderStudentPrices();
+        });
+
+        function showToast(message, type = 'error') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'times-circle' : 'check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c' || e.key === 'J' || e.key === 'j')) || (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                showToast('عذراً، تصوير الشاشة أو استخدام أدوات المطور ممنوع تماماً لحماية حقوق المنصة!', 'error');
+                return false;
+            }
+        });
+
+        db.ref('settings/vodafoneCash').on('value', (snapshot) => {
+            const num = snapshot.val();
+            if (num) {
+                document.getElementById('vodafoneNumDisplay').textContent = num;
+            }
+        });
+
+        // تحميل المحتوى مرة واحدة عند فتح الصفحة، ثم تحديثه لحظياً.
+        db.ref('content').on('value', (snapshot) => {
+            allContentData = snapshot.val() || {};
+            try {
+                localStorage.setItem('cachedContentData', JSON.stringify(allContentData));
+            } catch (e) {
+                console.warn('Could not cache content:', e);
+            }
+            contentLoaded = true;
+            contentLoadError = false;
+
+            if (currentStudent) {
+                renderContentList();
+            }
+        }, (error) => {
+            console.error('Content load error:', error);
+            contentLoaded = true;
+            contentLoadError = true;
+
+            if (currentStudent) {
+                renderContentList();
+            }
+        });
+
+        function copyVodafoneNumber() {
+            const num = document.getElementById('vodafoneNumDisplay').textContent;
+            navigator.clipboard.writeText(num).then(() => {
+                showToast('تم نسخ رقم التحويل بنجاح ✅', 'success');
+            });
+        }
+
+        function selectPackageAndRequest(packageName) {
+            closePricesModal();
+            openRequestCodeModal();
+
+            const select = document.getElementById('reqPackage');
+            if (!select) return;
+
+            // زر الاشتراك يحدد الباقة الحالية من نفس بيانات Firebase.
+            let key = '';
+            try {
+                const decoded = decodeURIComponent(packageName);
+                key = decoded.split('|')[0];
+            } catch (_) {}
+
+            if (!key || !studentPriceSettings[key]) {
+                // توافق مع أي استدعاء قديم
+                const oldName = String(packageName);
+                if (oldName.includes('شهر')) key = 'month';
+                else if (oldName.includes('ترم')) key = 'term';
+                else if (oldName.includes('سنوية')) key = 'year';
+            }
+
+            const item = studentPriceSettings[key];
+            if (!item) return;
+
+            const price = Number(item.price) || 0;
+            const labels = {
+                month: `شهر (${price} ج)`,
+                term: `ترم (${price} ج)`,
+                year: `سنوية (${price} ج)`
+            };
+
+            const targetValue = labels[key];
+            let found = false;
+
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === targetValue) {
+                    select.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+
+            // لو السعر اتغير في الأدمن، نحدّث اختيار الباقة أيضاً بدلاً من الاعتماد
+            // على القيم القديمة المكتوبة داخل HTML.
+            if (!found) {
+                select.innerHTML = '';
+                Object.entries(studentPriceSettings).forEach(([k, pkg]) => {
+                    if (!pkg || pkg.enabled === false) return;
+                    const pkgPrice = Number(pkg.price) || 0;
+                    const value = labels[k] || `${k} (${pkgPrice} ج)`;
+                    const text = k === 'month' ? `شهر (30 يوم) - ${pkgPrice} ج`
+                        : k === 'term' ? `ترم - ${pkgPrice} ج`
+                        : `سنوية - ${pkgPrice} ج`;
+                    select.innerHTML += `<option value="${escapePriceText(value)}">${escapePriceText(text)}</option>`;
+                });
+
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === targetValue) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        // ===== حماية الدخول والتحقق من البيانات =====
+        function normalizePhoneNumber(value) {
+            let phone = String(value || '').trim()
+                .replace(/[\s\-()]/g, '')
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+
+            // دعم كتابة +20xxxxxxxxxx أو 20xxxxxxxxxx وتحويلها لصيغة 01xxxxxxxxx
+            if (phone.startsWith('+20')) phone = '0' + phone.slice(3);
+            else if (phone.startsWith('20') && phone.length === 12) phone = '0' + phone.slice(2);
+
+            return phone;
+        }
+
+        function isValidEgyptianPhone(value) {
+            const phone = normalizePhoneNumber(value);
+            return /^01[0125][0-9]{8}$/.test(phone);
+        }
+
+        function isValidStudentName(value) {
+            const name = String(value || '').trim().replace(/\s+/g, ' ');
+            return name.length >= 3 && /[A-Za-z\u0600-\u06FF]/.test(name);
+        }
+
+        function getOrCreateDeviceId() {
+            let deviceId = localStorage.getItem(STUDENT_DEVICE_KEY);
+
+            if (!deviceId) {
+                if (window.crypto && crypto.randomUUID) {
+                    deviceId = 'dev_' + crypto.randomUUID();
+                } else {
+                    deviceId = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 14);
+                }
+                localStorage.setItem(STUDENT_DEVICE_KEY, deviceId);
+            }
+
+            return deviceId;
+        }
+
+        async function reserveDeviceForCode(code, deviceId, studentData) {
+            const ref = db.ref(`codes/${code}/devices`);
+            const result = await ref.transaction(devices => {
+                devices = devices || {};
+
+                // الجهاز المسجل بالفعل مسموح له بالدخول مرة أخرى.
+                if (devices[deviceId]) {
+                    devices[deviceId] = {
+                        ...devices[deviceId],
+                        ...studentData,
+                        lastLoginAt: Date.now()
+                    };
+                    return devices;
+                }
+
+                const maxDevices = Math.max(1, parseInt(studentData.maxDevices, 10) || 1);
+                const usedDevices = Object.keys(devices).length;
+
+                if (usedDevices >= maxDevices) {
+                    return; // abort transaction
+                }
+
+                devices[deviceId] = {
+                    name: studentData.name,
+                    phone: studentData.phone,
+                    loginAt: Date.now(),
+                    lastLoginAt: Date.now()
+                };
+                return devices;
+            });
+
+            return result.committed;
+        }
+
+        async function verifyCurrentDeviceSession() {
+            if (!currentStudent || !currentStudent.code || !currentStudent.deviceId) return false;
+
+            try {
+                const snap = await db.ref(`codes/${currentStudent.code}`).once('value');
+                const codeData = snap.val();
+
+                if (!codeData || codeData.isActive === false) return false;
+                if (codeData.expiresAt && Date.now() > Number(codeData.expiresAt)) return false;
+
+                const device = codeData.devices && codeData.devices[currentStudent.deviceId];
+                if (!device) return false;
+
+                currentStudent.expiresAt = codeData.expiresAt || currentStudent.expiresAt;
+                currentStudent.maxDevices = Number(codeData.maxDevices) || 1;
+                localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(currentStudent));
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function loginStudent() {
+            const name = document.getElementById('studentNameInput').value.trim();
+            const phone = normalizePhoneNumber(document.getElementById('studentPhoneInput').value);
+            const code = document.getElementById('studentCodeInput').value.trim();
+
+            if (!name || !phone || !code) {
+                return showToast('الرجاء إدخال الاسم ورقم الهاتف وكود الدخول', 'error');
+            }
+
+            if (!isValidStudentName(name)) {
+                return showToast('اكتب اسم الطالب بشكل صحيح', 'error');
+            }
+
+            if (!isValidEgyptianPhone(phone)) {
+                return showToast('رقم الهاتف غير صحيح. اكتب رقم مصري مكوّن من 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015', 'error');
+            }
+
+            if (!/^\d{9}$/.test(code)) {
+                return showToast('كود الدخول غير صحيح. أدخل الكود الذي أعطاك الأدمن كما هو', 'error');
+            }
+
+            try {
+                const codeSnapshot = await db.ref('codes/' + code).once('value');
+                if (!codeSnapshot.exists()) {
+                    return showToast('الكود غير صحيح أو غير مسجل عند الأدمن', 'error');
+                }
+
+                const codeData = codeSnapshot.val();
+
+                // الطالب يستخدم فقط الكود الموجود فعلياً في قاعدة بيانات الأدمن.
+                if (String(codeData.code || code) !== code) {
+                    return showToast('كود الدخول غير صحيح', 'error');
+                }
+
+                if (codeData.isActive === false) {
+                    return showToast('هذا الكود متوقف حالياً', 'error');
+                }
+
+                if (codeData.expiresAt && Date.now() > Number(codeData.expiresAt)) {
+                    return showToast('هذا الكود منتهي الصلاحية', 'error');
+                }
+
+                const maxDevices = Math.max(1, parseInt(codeData.maxDevices, 10) || 1);
+                const deviceId = getOrCreateDeviceId();
+
+                // حجز الجهاز بشكل ذري: لا يمكن تجاوز العدد المحدد من الأجهزة في الظروف العادية.
+                const committed = await reserveDeviceForCode(code, deviceId, {
+                    name,
+                    phone,
+                    maxDevices
+                });
+
+                if (!committed) {
+                    return showToast(`يا باشا الكود ده وصل للحد الأقصى (${maxDevices} جهاز). الجهاز ده مش مسموح له يستخدم الكود.`, 'error');
+                }
+
+                // لو الكود لم يبدأ مدته بعد، يبدأ الآن مع أول دخول فعلي.
+                let finalCodeData = codeData;
+                if (!codeData.activatedAt || !codeData.expiresAt) {
+                    const duration = Math.max(1, Number(codeData.duration) || 0);
+                    if (!duration) {
+                        return showToast('مدة الكود غير صحيحة عند الأدمن', 'error');
+                    }
+
+                    const activatedAt = Date.now();
+                    const expiresAt = activatedAt + duration;
+
+                    const activationResult = await db.ref('codes/' + code).transaction(data => {
+                        if (!data) return data;
+                        if (data.activatedAt && data.expiresAt) return data;
+
+                        data.activatedAt = activatedAt;
+                        data.expiresAt = expiresAt;
+                        return data;
+                    });
+
+                    finalCodeData = activationResult.snapshot.val() || finalCodeData;
+                }
+
+                if (finalCodeData.expiresAt && Date.now() > Number(finalCodeData.expiresAt)) {
+                    return showToast('هذا الكود انتهت صلاحيته', 'error');
+                }
+
+                currentStudent = {
+                    name,
+                    phone,
+                    code,
+                    section: finalCodeData.section || 'all',
+                    expiresAt: Number(finalCodeData.expiresAt) || (Date.now() + 30 * 24 * 60 * 60 * 1000),
+                    deviceId,
+                    maxDevices
+                };
+
+                localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(currentStudent));
+
+                await db.ref('students/' + `${code}_${deviceId}`).set({
+                    ...currentStudent,
+                    loginAt: Date.now()
+                });
+
+                const today = new Date().toISOString().split('T')[0];
+                await db.ref('attendance/' + deviceId + '/' + today).set({
+                    studentName: name,
+                    studentPhone: phone,
+                    section: currentStudent.section,
+                    code,
+                    timestamp: Date.now()
+                });
+
+                initApp();
+            } catch (error) {
+                console.error(error);
+                showToast('حصل خطأ أثناء التحقق من الكود والجهاز. حاول مرة أخرى', 'error');
+            }
+        }
+
+        async function checkExistingSession() {
+            const saved = localStorage.getItem(STUDENT_SESSION_KEY);
+
+            // لا توجد جلسة محفوظة = اعرض شاشة تسجيل الدخول.
+            if (!saved) return;
+
+            try {
+                const savedStudent = JSON.parse(saved);
+
+                if (!savedStudent || !savedStudent.code) {
+                    localStorage.removeItem(STUDENT_SESSION_KEY);
+                    return;
+                }
+
+                // نفس الجهاز دائماً يستخدم نفس Device ID.
+                const deviceId = getOrCreateDeviceId();
+
+                if (!savedStudent.deviceId) {
+                    savedStudent.deviceId = deviceId;
+                    localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(savedStudent));
+                }
+
+                // لو الـ ID مختلف، لا نسمح بنقل الجلسة لجهاز آخر.
+                if (savedStudent.deviceId !== deviceId) {
+                    localStorage.removeItem(STUDENT_SESSION_KEY);
+                    return;
+                }
+
+                currentStudent = savedStudent;
+
+                // افتح التطبيق فوراً من الجلسة المحفوظة.
+                // التحقق من Firebase يتم في الخلفية، فلا ترجع شاشة الكود أثناء الفتح.
+                initApp();
+
+                // تحقق في الخلفية من أن الكود ما زال صالحاً ومربوطاً بهذا الجهاز.
+                try {
+                    const snap = await db.ref('codes/' + currentStudent.code).once('value');
+                    const codeData = snap.val();
+
+                    if (!codeData) {
+                        console.warn('Code not found in Firebase');
+                        return;
+                    }
+
+                    if (codeData.isActive === false) {
+                        logoutStudent();
+                        showToast('الكود متوقف حالياً', 'error');
+                        return;
+                    }
+
+                    if (codeData.expiresAt && Date.now() > Number(codeData.expiresAt)) {
+                        logoutStudent();
+                        showToast('انتهت صلاحية الكود', 'error');
+                        return;
+                    }
+
+                    // الجهاز لازم يظل مسجلاً على نفس الكود.
+                    if (codeData.devices && !codeData.devices[deviceId]) {
+                        logoutStudent();
+                        showToast('يا باشا الكود ده اتشال من الجهاز ده', 'error');
+                        return;
+                    }
+
+                    currentStudent.expiresAt = Number(codeData.expiresAt) || currentStudent.expiresAt;
+                    currentStudent.maxDevices = Number(codeData.maxDevices) || currentStudent.maxDevices || 1;
+                    localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(currentStudent));
+
+                } catch (backgroundError) {
+                    // لا نطرد الطالب ولا نطلب الكود بسبب تأخر/انقطاع Firebase المؤقت.
+                    console.warn('Background session check failed:', backgroundError);
+                }
+
+            } catch (e) {
+                console.error('Invalid saved session:', e);
+                localStorage.removeItem(STUDENT_SESSION_KEY);
+            }
+        }
+
+        // مراقبة فورية لتحديثات الكود (في حال أوقفه الأدمن أو انتهى وقته أثناء التصفح)
+        function monitorStudentCodeStatus() {
+            if (!currentStudent || !currentStudent.code) return;
+            
+            if (codeStatusListener) {
+                db.ref('codes/' + currentStudent.code).off('value', codeStatusListener);
+            }
+
+            codeStatusListener = db.ref('codes/' + currentStudent.code).on('value', (snapshot) => {
+                if (!currentStudent) return;
+                const codeData = snapshot.val();
+
+                // إذا تم حذف الكود أو أصبح غير نشط بواسطة الأدمن
+                if (!codeData || codeData.isActive === false) {
+                    logoutStudent();
+                    showToast('تم انتهاء وقت الكود الخاص بك، الرجاء التجديد', 'error');
+                    openPricesModal();
+                    return;
+                }
+
+                // إذا انتهى وقت صلاحية الكود
+                if (codeData.expiresAt && Date.now() > codeData.expiresAt) {
+                    logoutStudent();
+                    showToast('تم انتهاء وقت الكود الخاص بك، الرجاء التجديد', 'error');
+                    openPricesModal();
+                    return;
+                }
+
+                // لو الأدمن أزال الجهاز من الكود، يتم إخراج الطالب فوراً.
+                if (!codeData.devices || !codeData.devices[currentStudent.deviceId]) {
+                    logoutStudent();
+                    showToast('يا باشا الكود ده لم يعد مسموحاً على الجهاز ده', 'error');
+                    return;
+                }
+
+                currentStudent.expiresAt = Number(codeData.expiresAt) || currentStudent.expiresAt;
+                currentStudent.maxDevices = Number(codeData.maxDevices) || currentStudent.maxDevices || 1;
+                localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(currentStudent));
+            });
+        }
+
+        function logoutStudent() {
+            if (codeStatusListener && currentStudent) {
+                db.ref('codes/' + currentStudent.code).off('value', codeStatusListener);
+                codeStatusListener = null;
+            }
+            localStorage.removeItem('studentSession');
+            currentStudent = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function getSectionName(sec) {
+            const names = { science: 'علمي علوم', math: 'علمي رياضة', arts: 'أدبي', baccalaureate: 'باكلوريا', all: 'عام' };
+            return names[sec] || sec;
+        }
+
+        function initApp() {
+            // افتح الواجهة والمحتوى المخزن فوراً على نفس الجهاز.
+            try {
+                const cached = localStorage.getItem('cachedContentData');
+                if (cached && Object.keys(allContentData || {}).length === 0) {
+                    allContentData = JSON.parse(cached) || {};
+                }
+            } catch (e) {
+                console.warn('Cached content error:', e);
+            }
+
+            // بدء جلسة التطبيق من الصفحة الرئيسية فقط عند الدخول للمنصة
+            navigationStack = ['root'];
+            currentParentId = 'root';
+            document.getElementById('currentSectionTitle').innerHTML = '<i class="fas fa-book-open ml-2 text-purple-600"></i>محتوى المادة';
+            document.getElementById('backButton').classList.add('hidden');
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('videoWatermarkBox').innerHTML = `${currentStudent.name} &bull; ${currentStudent.code}`;
+            document.getElementById('modalStudentCode').textContent = currentStudent.code;
+            document.getElementById('modalStudentSection').textContent = getSectionName(currentStudent.section);
+            
+            document.getElementById('headerStudentSection').textContent = getSectionName(currentStudent.section);
+
+            const timeLeftMs = currentStudent.expiresAt - Date.now();
+            const daysLeft = Math.max(0, Math.ceil(timeLeftMs / (1000 * 60 * 60 * 24)));
+            document.getElementById('modalStudentTimeLeft').textContent = `${daysLeft} يوم متبقي`;
+
+            if (!history.state || history.state.step === undefined) {
+                history.replaceState({ step: 0, sectionId: 'root' }, '');
+            }
+
+            renderContentList();
+            listenToStudentChats();
+            monitorStudentCodeStatus(); // تفعيل المراقبة اللحظية لصلاحية الكود
+        }
+
+        window.addEventListener('popstate', (event) => {
+            if (!currentStudent) return;
+
+            // الرجوع خطوة واحدة فقط في مسار الأقسام
+            if (navigationStack.length > 1) {
+                navigationStack.pop();
+                currentParentId = navigationStack[navigationStack.length - 1];
+
+                if (currentParentId === 'root') {
+                    document.getElementById('currentSectionTitle').innerHTML = '<i class="fas fa-book-open ml-2 text-purple-600"></i>محتوى المادة';
+                    document.getElementById('backButton').classList.add('hidden');
+                } else {
+                    const parentItem = allContentData[currentParentId];
+                    const parentTitle = parentItem ? (parentItem.displayName || parentItem.title || 'القسم') : 'القسم';
+                    document.getElementById('currentSectionTitle').textContent = parentTitle;
+                    document.getElementById('backButton').classList.remove('hidden');
+                }
+
+                renderContentList();
+            }
+        });
+
+        function renderContentList() {
+            const container = document.getElementById('studentContentList');
+            if (!container || !currentStudent) return;
+
+            // لا تعرض "لا يوجد محتوى" قبل أن ينتهي Firebase من أول قراءة.
+            if (!contentLoaded) {
+                // في الجلسة المحفوظة لا نظهر شاشة انتظار.
+                // نعرض آخر محتوى محفوظ محلياً فوراً إن وجد، ثم Firebase يحدثه بالخلفية.
+                const cached = localStorage.getItem('cachedContentData');
+                if (cached) {
+                    try {
+                        allContentData = JSON.parse(cached) || {};
+                    } catch (e) {}
+                }
+                // لو عندنا محتوى مخزن، أكمل عرضه فوراً.
+                // لو مفيش كاش، لا نضع رسالة "جاري التحميل"؛ ننتظر البيانات بدون وميض.
+                if (!Object.keys(allContentData || {}).length) return;
+            }
+
+            if (contentLoadError) {
+                container.innerHTML = `
+                    <div class="text-center text-red-600 font-bold py-10">
+                        <i class="fas fa-wifi ml-2"></i>
+                        تعذر تحميل المحتوى. حاول مرة أخرى.
+                        <button onclick="renderContentList()" class="block mx-auto mt-4 bg-purple-600 text-white px-5 py-2 rounded-xl">
+                            إعادة المحاولة
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            const items = Object.entries(allContentData).filter(([key, item]) => {
+                if (!item || typeof item !== 'object') return false;
+
+                const matchesParent = (item.parentId || 'root') === currentParentId;
+                const matchesSection =
+                    item.mainSection === 'all' ||
+                    item.mainSection === currentStudent.section ||
+                    currentStudent.section === 'all';
+
+                return matchesParent && matchesSection;
+            }).sort((a, b) => (Number(a[1].order) || 0) - (Number(b[1].order) || 0));
+
+            // الرسالة تظهر فقط بعد وصول بيانات Firebase فعلاً.
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <p class="text-center text-gray-500 py-10">
+                        لا يوجد محتوى مضاف حالياً في هذا القسم
+                    </p>`;
+                return;
+            }
+
+            // بناء الصفحة مرة واحدة بدون setTimeout وبدون وميض.
+            const fragment = document.createDocumentFragment();
+
+            items.forEach(([key, item]) => {
+                const displayName = item.displayName || item.title || '-';
+                const typeIcons = {
+                    section: 'fa-folder text-sky-600',
+                    pdf: 'fa-file-pdf text-orange-600',
+                    drive: 'fab fa-google-drive text-blue-600',
+                    link: 'fa-link text-green-600',
+                    video: 'fa-video text-red-600',
+                    youtube: 'fab fa-youtube text-red-600',
+                    exam: 'fa-clipboard-question text-purple-600',
+                    quiz: 'fa-tasks text-indigo-600',
+                    text: 'fa-file-lines text-blue-500'
+                };
+
+                const card = document.createElement('div');
+                card.className = 'content-card relative';
+                card.onclick = () => openStudentContent(key);
+
+                if (item.icon) {
+                    const img = document.createElement('img');
+                    img.src = item.icon;
+                    img.className = 'w-16 h-16 object-cover rounded-2xl border mb-3 shadow-md';
+                    img.loading = 'lazy';
+                    card.appendChild(img);
+                } else {
+                    const iconBox = document.createElement('div');
+                    iconBox.className = 'w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-sky-100';
+
+                    const icon = document.createElement('i');
+                    icon.className = `fas ${typeIcons[item.type] || 'fa-file'}`;
+                    iconBox.appendChild(icon);
+                    card.appendChild(iconBox);
+                }
+
+                if (item.type === 'video' || item.type === 'youtube') {
+                    const favoriteWrap = document.createElement('div');
+                    favoriteWrap.className = 'absolute top-4 left-4';
+
+                    const favoriteBtn = document.createElement('button');
+                    favoriteBtn.type = 'button';
+                    favoriteBtn.dataset.favoriteKey = key;
+                    favoriteBtn.title = isVideoFavorite(key) ? 'إزالة من المفضلة' : 'إضافة للمفضلة';
+                    favoriteBtn.className =
+                        `w-10 h-10 rounded-xl ${isVideoFavorite(key) ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600'} hover:bg-yellow-100 hover:text-yellow-600 border border-sky-200 flex items-center justify-center transition shadow-sm`;
+
+                    const star = document.createElement('i');
+                    star.className = `${isVideoFavorite(key) ? 'fas' : 'far'} fa-star text-base`;
+                    favoriteBtn.appendChild(star);
+
+                    favoriteBtn.onclick = (event) => {
+                        event.stopPropagation();
+                        toggleVideoFavorite(key);
+                    };
+
+                    favoriteWrap.appendChild(favoriteBtn);
+                    card.appendChild(favoriteWrap);
+                }
+
+                const title = document.createElement('h4');
+                title.className = 'font-bold text-gray-900 text-lg mb-1';
+                title.textContent = displayName;
+                card.appendChild(title);
+
+                const desc = document.createElement('p');
+                desc.className = 'text-xs text-sky-800 bg-sky-100 px-3 py-1 rounded-full font-semibold';
+                desc.textContent = item.description || 'قسم فرعي';
+                card.appendChild(desc);
+
+                fragment.appendChild(card);
+            });
+
+            container.replaceChildren(fragment);
+        }
+
+        function openPdfViewer(url, title) {
+            document.getElementById('pdfModalTitle').textContent = title;
+            document.getElementById('pdfViewerSlot').src = url;
+            document.getElementById('pdfModal').classList.remove('hidden');
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').classList.add('hidden');
+            document.getElementById('pdfViewerSlot').src = '';
+        }
+
+        function openTextExam(title, content, examKey) {
+            activeExamData = { key: examKey, title: title };
+            document.getElementById('examTitleModal').textContent = title;
+            document.getElementById('examContentBody').innerHTML = content.replace(/\n/g, '<br>');
+            document.getElementById('examAnswerInput').value = '';
+            document.getElementById('examTextAnswerBox').classList.remove('hidden');
+            document.getElementById('examSubmitButton').classList.remove('hidden');
+            document.getElementById('examModal').classList.remove('hidden');
+        }
+
+        function openMcqExam(examData) {
+            const exam = examData.raw;
+            activeMcqQuestions = normalizeAdminQuiz(exam);
+            if (!activeMcqQuestions.length) {
+                showToast('هذا الاختبار لا يحتوي على أسئلة', 'error');
+                return;
+            }
+            activeMcqAnswers = {};
+            activeMcqCurrentIndex = 0;
+            activeMcqTimeLeft = Number(exam.duration || 15) * 60;
+
+            const modal = document.getElementById('examModal');
+            const content = modal.querySelector('.bg-white');
+            modal.classList.remove('hidden');
+            modal.classList.add('fixed', 'inset-0', 'z-[9999]', 'p-0');
+
+            content.classList.remove('max-w-lg');
+            content.classList.add('w-full', 'w-screen', 'h-full', 'h-screen', 'max-w-none', 'rounded-none', 'flex', 'flex-col', 'overflow-hidden');
+            content.style.width = '100vw';
+            content.style.height = '100vh';
+            content.style.maxHeight = '100vh';
+
+            renderMcqQuestionScreen();
+
+            if (activeMcqTimerInterval) clearInterval(activeMcqTimerInterval);
+            activeMcqTimerInterval = setInterval(() => {
+                activeMcqTimeLeft--;
+                const timerEl = document.getElementById('mcqTimerDisplay');
+                if (timerEl) {
+                    const m = Math.floor(activeMcqTimeLeft / 60);
+                    const s = activeMcqTimeLeft % 60;
+                    timerEl.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                }
+                if (activeMcqTimeLeft <= 0) {
+                    clearInterval(activeMcqTimerInterval);
+                    submitMcqExamFinal();
+                }
+            }, 1000);
+        }
+
+        function renderMcqQuestionScreen() {
+            const body = document.getElementById('examContentBody');
+            document.getElementById('examTitleModal').textContent = activeExamData.title;
+            document.getElementById('examTextAnswerBox').classList.add('hidden');
+            document.getElementById('examSubmitButton').classList.add('hidden');
+
+            const q = activeMcqQuestions[activeMcqCurrentIndex];
+            const total = activeMcqQuestions.length;
+            const m = Math.floor(activeMcqTimeLeft / 60);
+            const s = activeMcqTimeLeft % 60;
+
+            let html = `
+                <div class="flex justify-between items-center bg-purple-100 p-3 rounded-xl border border-purple-200 mb-4">
+                    <span class="font-bold text-purple-900 text-sm">السؤال ${activeMcqCurrentIndex + 1} من ${total}</span>
+                    <span id="mcqTimerDisplay" class="font-mono font-bold text-red-600 bg-white px-3 py-1 rounded-lg border shadow-sm">${m}:${s < 10 ? '0' : ''}${s}</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3 mb-4">
+                    <p class="font-bold text-gray-900 text-base leading-relaxed">${q.text}</p>
+                    ${q.image ? `<img src="${q.image}" class="max-h-48 rounded-xl border mx-auto cursor-pointer" onclick="openQuestionImage('${q.image}')">` : ''}
+                </div>
+                <div class="space-y-2 mb-4">
+            `;
+
+            q.options.forEach((opt, optIdx) => {
+                const isSelected = activeMcqAnswers[activeMcqCurrentIndex] === optIdx;
+                html += `
+                    <div onclick="selectMcqOption(${activeMcqCurrentIndex}, ${optIdx})" 
+                         class="p-3.5 rounded-xl border cursor-pointer transition flex items-center gap-3 ${isSelected ? 'bg-purple-600 text-white border-purple-600 shadow-md font-bold' : 'bg-white hover:bg-purple-50 border-gray-200 text-gray-800'}">
+                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? 'bg-white text-purple-700' : 'bg-gray-100 text-gray-600'}">${String.fromCharCode(65 + optIdx)}</span>
+                        <span class="text-sm flex-1">${opt}</span>
+                    </div>
+                `;
+            });
+
+            html += `</div>
+                <div class="flex justify-between gap-3 mt-auto pt-4 border-t">
+                    <button onclick="prevMcqQuestion()" ${activeMcqCurrentIndex === 0 ? 'disabled' : ''} class="px-5 py-2.5 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-sm disabled:opacity-40">السابق</button>
+                    ${activeMcqCurrentIndex < total - 1 ? 
+                        `<button onclick="nextMcqQuestion()" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm">التالي</button>` : 
+                        `<button onclick="submitMcqExamFinal()" class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm shadow-md">إنهاء وتسليم الاختبار</button>`
+                    }
+                </div>
+            `;
+            body.innerHTML = html;
+        }
+
+        function selectMcqOption(qIdx, optIdx) {
+            activeMcqAnswers[qIdx] = optIdx;
+            renderMcqQuestionScreen();
+        }
+
+        function nextMcqQuestion() {
+            if (activeMcqCurrentIndex < activeMcqQuestions.length - 1) {
+                activeMcqCurrentIndex++;
+                renderMcqQuestionScreen();
+            }
+        }
+
+        function prevMcqQuestion() {
+            if (activeMcqCurrentIndex > 0) {
+                activeMcqCurrentIndex--;
+                renderMcqQuestionScreen();
+            }
+        }
+
+        async function submitMcqExamFinal() {
+            if (activeMcqTimerInterval) clearInterval(activeMcqTimerInterval);
+            
+            let score = 0;
+            const total = activeMcqQuestions.length;
+            activeMcqQuestions.forEach((q, idx) => {
+                if (activeMcqAnswers[idx] === q.correct) {
+                    score++;
+                }
+            });
+
+            const percentage = Math.round((score / total) * 100);
+
+            try {
+                await db.ref(`studentStats/${currentStudent.code}/exams/${activeExamData.key}`).set({
+                    examTitle: activeExamData.title,
+                    score: score,
+                    total: total,
+                    percentage: percentage,
+                    status: 'تم التصحيح تلقائياً',
+                    timestamp: Date.now()
+                });
+                showToast(`تم إنهاء الاختبار بنجاح! درجتك: ${score} من ${total} (${percentage}%)`, 'success');
+                closeExamModal();
+            } catch (e) {
+                showToast('خطأ في حفظ نتيجة الاختبار', 'error');
+            }
+        }
+
+        async function submitExamTextAnswer() {
+            const answer = document.getElementById('examAnswerInput').value.trim();
+            if (!answer) return showToast('برجاء كتابة إجابتك أو حل الاختبار أولاً', 'error');
+            if (!activeExamData) return;
+
+            try {
+                await db.ref(`studentStats/${currentStudent.code}/exams/${activeExamData.key}`).set({
+                    examTitle: activeExamData.title,
+                    studentAnswer: answer,
+                    status: 'تم الإرسال وبانتظار التصحيح',
+                    timestamp: Date.now()
+                });
+                showToast('تم إرسال إجابة الاختبار بنجاح ✅', 'success');
+                closeExamModal();
+            } catch (e) {
+                showToast('خطأ في إرسال الإجابة', 'error');
+            }
+        }
+        
+        function normalizeAdminQuiz(exam) {
+            if (!exam || exam.type !== 'quiz' || !Array.isArray(exam.questions)) return [];
+            return exam.questions.map((q, i) => ({
+                index: i,
+                text: String((q && q.text) || ''),
+                image: (q && q.image) || '',
+                options: Array.isArray(q && q.options) ? q.options.map(v => String(v == null ? '' : v)) : [],
+                optionImages: Array.isArray(q && q.optionImages) ? q.optionImages : [],
+                correct: Number(q && q.correct)
+            })).filter(q => q.text || q.image);
+        }
+
+        function openExamFromContent(examKey) {
+            const exam = allContentData[examKey];
+            if (!exam) {
+                showToast('لم يتم العثور على الاختبار', 'error');
+                return;
+            }
+
+            activeExamData = {
+                key: examKey,
+                title: exam.displayName || exam.title || 'اختبار',
+                raw: exam
+            };
+
+            if (exam.type === 'quiz') {
+                openMcqExam(activeExamData);
+                return;
+            }
+
+            openTextExam(activeExamData.title, exam.value || exam.description || '', examKey);
+        }
+
+        function closeExamModal() {
+            if (activeMcqTimerInterval) {
+                clearInterval(activeMcqTimerInterval);
+                activeMcqTimerInterval = null;
+            }
+
+            const modal = document.getElementById('examModal');
+            const content = modal ? modal.querySelector('.bg-white') : null;
+
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('fixed', 'inset-0', 'z-[9999]', 'p-0');
+            }
+
+            if (content) {
+                content.classList.remove('w-full', 'w-screen', 'h-full', 'h-screen', 'max-w-none', 'rounded-none', 'overflow-hidden', 'overflow-y-auto', 'flex', 'flex-col');
+                content.classList.add('max-w-lg');
+                content.style.width = '';
+                content.style.height = '';
+                content.style.maxHeight = '';
+            }
+
+            document.getElementById('examSubmitButton').classList.remove('hidden');
+            document.getElementById('examTextAnswerBox').classList.remove('hidden');
+
+            activeExamData = null;
+            activeMcqAnswers = {};
+            activeMcqQuestions = [];
+            activeMcqCurrentIndex = 0;
+            activeMcqTimeLeft = 0;
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function getFavoritesRef() {
+            if (!currentStudent || !currentStudent.code) return null;
+            return db.ref('studentFavorites/' + currentStudent.code);
+        }
+
+        async function loadStudentFavorites() {
+            const ref = getFavoritesRef();
+            if (!ref) {
+                studentFavorites = {};
+                return;
+            }
+            try {
+                const snap = await ref.once('value');
+                studentFavorites = snap.val() || {};
+            } catch (e) {
+                studentFavorites = {};
+            }
+        }
+
+        function getFavoriteKey(key) {
+            return String(key || '').replace(/[.#$[\]/]/g, '_');
+        }
+
+        async function toggleVideoFavorite(contentKey) {
+            if (!currentStudent || !currentStudent.code) {
+                showToast('سجل الدخول أولاً', 'error');
+                return;
+            }
+
+            const item = allContentData[contentKey];
+            if (!item) {
+                showToast('لم يتم العثور على الفيديو', 'error');
+                return;
+            }
+
+            const favoriteKey = getFavoriteKey(contentKey);
+            const ref = getFavoritesRef().child(favoriteKey);
+
+            try {
+                if (studentFavorites[favoriteKey]) {
+                    await ref.remove();
+                    delete studentFavorites[favoriteKey];
+                    showToast('تم حذف الفيديو من المفضلة', 'success');
+                } else {
+                    await ref.set({
+                        key: contentKey,
+                        title: item.displayName || item.title || 'فيديو',
+                        value: item.value || '',
+                        type: item.type || 'video',
+                        timestamp: Date.now()
+                    });
+                    studentFavorites[favoriteKey] = {
+                        key: contentKey,
+                        title: item.displayName || item.title || 'فيديو',
+                        value: item.value || '',
+                        type: item.type || 'video',
+                        timestamp: Date.now()
+                    };
+                    showToast('تمت إضافة الفيديو للمفضلة ⭐', 'success');
+                }
+
+                refreshFavoriteButtons();
+            } catch (e) {
+                showToast('حدث خطأ أثناء تحديث المفضلة', 'error');
+            }
+        }
+
+        function isVideoFavorite(contentKey) {
+            return !!studentFavorites[getFavoriteKey(contentKey)];
+        }
+
+        function refreshFavoriteButtons() {
+            document.querySelectorAll('[data-favorite-key]').forEach(function(btn) {
+                const key = btn.getAttribute('data-favorite-key');
+                const fav = isVideoFavorite(key);
+                btn.innerHTML = '<i class="' + (fav ? 'fas' : 'far') + ' fa-star text-base"></i>';
+                btn.title = fav ? 'إزالة من المفضلة' : 'إضافة للمفضلة';
+                btn.classList.toggle('bg-yellow-500', fav);
+                btn.classList.toggle('text-white', fav);
+                btn.classList.toggle('bg-white', !fav);
+                btn.classList.toggle('text-gray-600', !fav);
+            });
+        }
+
+        function updateProfileTimeRemaining() {
+            const el = document.getElementById('profileTimeRemaining');
+            if (!el || !currentStudent || !currentStudent.expiresAt) return;
+            const left = Math.max(0, currentStudent.expiresAt - Date.now());
+            const days = Math.floor(left / 86400000);
+            const hours = Math.floor((left % 86400000) / 3600000);
+            const mins = Math.floor((left % 3600000) / 60000);
+            el.textContent = days + ' يوم - ' + hours + ' ساعة - ' + mins + ' دقيقة';
+        }
+
+        function openStudentProfile() {
+            if (!currentStudent) {
+                showToast('سجل الدخول أولاً', 'error');
+                return;
+            }
+
+            loadStudentFavorites().then(function() {
+                const existing = document.getElementById('studentProfileModal');
+                if (existing) existing.remove();
+
+                const modal = document.createElement('div');
+                modal.id = 'studentProfileModal';
+                modal.className = 'fixed inset-0 z-[7000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6';
+                modal.innerHTML = `
+                    <div class="w-full max-w-3xl max-h-[92vh] overflow-hidden bg-white rounded-3xl shadow-2xl">
+                        <div class="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 sm:p-7">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+                                        <i class="fas fa-user text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold">الملف الشخصي</h2>
+                                        <p class="text-xs text-white/80">بيانات الطالب والمفضلة</p>
+                                    </div>
+                                </div>
+                                <button onclick="closeStudentProfile()" class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-2xl">×</button>
+                            </div>
+                        </div>
+
+                        <div class="p-4 sm:p-6 overflow-y-auto max-h-[72vh]">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                                <div class="rounded-2xl bg-gray-50 border p-4">
+                                    <div class="text-xs text-gray-500 mb-1">الاسم</div>
+                                    <div class="font-bold text-gray-900">${escapeHtml(currentStudent.name || '—')}</div>
+                                </div>
+                                <div class="rounded-2xl bg-gray-50 border p-4">
+                                    <div class="text-xs text-gray-500 mb-1">كود الطالب</div>
+                                    <div class="font-bold text-gray-900">${escapeHtml(currentStudent.code || '—')}</div>
+                                </div>
+                                <div class="rounded-2xl bg-gray-50 border p-4">
+                                    <div class="text-xs text-gray-500 mb-1">الشعبة</div>
+                                    <div class="font-bold text-gray-900">${escapeHtml(getSectionName(currentStudent.section) || '—')}</div>
+                                </div>
+                                <div class="rounded-2xl bg-gray-50 border p-4">
+                                    <div class="text-xs text-gray-500 mb-1">رقم الهاتف</div>
+                                    <div class="font-bold text-gray-900">${escapeHtml(currentStudent.phone || currentStudent.phoneNumber || '—')}</div>
+                                </div>
+                                <div class="rounded-2xl bg-gray-50 border p-4 sm:col-span-2">
+                                    <div class="text-xs text-gray-500 mb-1">الوقت المتبقي للكود</div>
+                                    <div class="font-bold text-emerald-700" id="profileTimeRemaining">جاري الحساب...</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                                <button type="button" onclick="openStudentStatistics();"
+                                    class="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition shadow-sm">
+                                    <i class="fas fa-chart-line text-lg"></i>
+                                    الإحصائيات
+                                </button>
+                                <button type="button" onclick="studentLogout();"
+                                    class="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-red-50 hover:bg-red-100 text-red-700 font-bold transition border border-red-200">
+                                    <i class="fas fa-right-from-bracket text-lg"></i>
+                                    تسجيل الخروج
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">⭐ المفضلة</h3>
+                                    <p class="text-xs text-gray-500">الفيديوهات التي حفظتها للرجوع إليها لاحقًا</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold">
+                                    ${Object.keys(studentFavorites).length} فيديو
+                                </span>
+                            </div>
+
+                            <div id="studentFavoritesList">
+                                ${renderFavoritesHtml()}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+                updateProfileTimeRemaining();
+            });
+        }
+
+        function renderFavoritesHtml() {
+            const items = Object.values(studentFavorites || {}).sort(function(a, b) {
+                return Number(b.timestamp || 0) - Number(a.timestamp || 0);
+            });
+
+            if (!items.length) {
+                return '<div class="text-center py-12 rounded-2xl border border-dashed bg-gray-50">' +
+                    '<div class="text-4xl mb-3">⭐</div>' +
+                    '<div class="font-bold text-gray-700">لا توجد فيديوهات في المفضلة</div>' +
+                    '<div class="text-xs text-gray-500 mt-1">اضغط على نجمة أي فيديو لإضافته هنا</div></div>';
+            }
+
+            return items.map(function(item) {
+                const key = item.key;
+                return '<div class="flex items-center justify-between gap-3 p-4 mb-3 rounded-2xl border bg-white hover:bg-gray-50">' +
+                    '<div class="min-w-0">' +
+                        '<div class="font-bold text-gray-900 truncate">' + escapeHtml(item.title || 'فيديو') + '</div>' +
+                        '<div class="text-xs text-gray-500 mt-1">محفوظ في المفضلة</div>' +
+                    '</div>' +
+                    '<div class="flex gap-2 flex-shrink-0">' +
+                        '<button onclick="openFavoriteVideo(\'' + escapeHtml(key).replace(/'/g, '&#39;') + '\')" class="px-3 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold">مشاهدة</button>' +
+                        '<button onclick="toggleVideoFavorite(\'' + escapeHtml(key).replace(/'/g, '&#39;') + '\'); setTimeout(openStudentProfile, 200)" class="px-3 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-bold">حذف</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        async function openStudentStatistics() {
+            if (!currentStudent) {
+                showToast('سجل الدخول أولاً', 'error');
+                return;
+            }
+
+            const profileModal = document.getElementById('studentProfileModal');
+            if (profileModal) profileModal.remove();
+
+            let stats = {};
+            try {
+                const snap = await db.ref('studentStats/' + currentStudent.code).once('value');
+                stats = snap.val() || {};
+            } catch (e) {}
+
+            const exams = stats.exams || {};
+            const examList = Object.values(exams);
+            const totalExams = examList.length;
+            const totalScore = examList.reduce((s, x) => s + Number(x.score || 0), 0);
+            const totalQuestions = examList.reduce((s, x) => s + Number(x.total || 0), 0);
+            const avg = totalQuestions ? Math.round((totalScore / totalQuestions) * 100) : 0;
+
+            const modal = document.createElement('div');
+            modal.id = 'studentStatisticsModal';
+            modal.className = 'fixed inset-0 z-[8000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6';
+            modal.innerHTML = `
+                <div class="w-full max-w-2xl max-h-[92vh] overflow-hidden bg-white rounded-3xl shadow-2xl">
+                    <div class="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 sm:p-7">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold">إحصائيات الطالب</h2>
+                                    <p class="text-xs text-white/80">ملخص أدائك في الاختبارات</p>
+                                </div>
+                            </div>
+                            <button onclick="closeStudentStatistics()" class="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-2xl">×</button>
+                        </div>
+                    </div>
+                    <div class="p-5 sm:p-7 overflow-y-auto max-h-[72vh]">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                            <div class="rounded-2xl bg-purple-50 border border-purple-100 p-4 text-center">
+                                <div class="text-2xl font-black text-purple-700">${totalExams}</div>
+                                <div class="text-xs text-gray-500 mt-1">اختبار</div>
+                            </div>
+                            <div class="rounded-2xl bg-green-50 border border-green-100 p-4 text-center">
+                                <div class="text-2xl font-black text-green-700">${avg}%</div>
+                                <div class="text-xs text-gray-500 mt-1">متوسط النتيجة</div>
+                            </div>
+                            <div class="rounded-2xl bg-indigo-50 border border-indigo-100 p-4 text-center col-span-2 sm:col-span-1">
+                                <div class="text-2xl font-black text-indigo-700">${totalScore}</div>
+                                <div class="text-xs text-gray-500 mt-1">إجمالي الدرجات</div>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-gray-900 mb-3">نتائج الاختبارات</h3>
+                        ${examList.length ? examList.map(function(x) {
+                            return `<div class="flex items-center justify-between gap-3 p-4 mb-2 rounded-2xl border bg-gray-50">
+                                <div class="min-w-0">
+                                    <div class="font-bold truncate">${escapeHtml(x.examTitle || 'اختبار')}</div>
+                                    <div class="text-xs text-gray-500 mt-1">${Number(x.score || 0)} / ${Number(x.total || 0)}</div>
+                                </div>
+                                <div class="font-black text-purple-700">${Number(x.percentage || 0)}%</div>
+                            </div>`;
+                        }).join('') : '<div class="text-center py-10 text-gray-500">لا توجد نتائج اختبارات حتى الآن.</div>'}
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function closeStudentStatistics() {
+            const modal = document.getElementById('studentStatisticsModal');
+            if (modal) modal.remove();
+        }
+
+        function studentLogout() {
+            closeStudentProfile();
+            closeStudentStatistics();
+            logoutStudent();
+        }
+
+        function closeStudentProfile() {
+            const modal = document.getElementById('studentProfileModal');
+            if (modal) modal.remove();
+        }
+
+        function openFavoriteVideo(contentKey) {
+            closeStudentProfile();
+            const item = allContentData[contentKey];
+            if (!item) return showToast('الفيديو لم يعد متاحًا', 'error');
+
+            if (item.type === 'video' || item.type === 'youtube') {
+                openVideoPlayer(item.value || '', item.displayName || item.title || 'فيديو', contentKey);
+            } else {
+                showToast('هذا المحتوى ليس فيديو', 'error');
+            }
+        }
+
+        function openQuestionImage(imageUrl) {
+            if (!imageUrl) return;
+
+            let viewer = document.getElementById('questionImageViewer');
+
+            if (!viewer) {
+                viewer = document.createElement('div');
+                viewer.id = 'questionImageViewer';
+                viewer.className = 'fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-2 sm:p-6';
+                viewer.innerHTML = `
+                    <button type="button" onclick="closeQuestionImage()"
+                        class="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white text-2xl font-bold">
+                        ×
+                    </button>
+                    <div class="w-full h-full flex items-center justify-center overflow-auto">
+                        <img id="questionImageViewerImg"
+                            src=""
+                            class="max-w-none object-contain cursor-zoom-in select-none"
+                            style="width:auto; height:auto; max-width:95vw; max-height:92vh;"
+                            onclick="toggleQuestionImageZoom()">
+                    </div>
+                `;
+                document.body.appendChild(viewer);
+            }
+
+            const img = document.getElementById('questionImageViewerImg');
+            img.src = imageUrl;
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            img.style.maxWidth = '95vw';
+            img.style.maxHeight = '92vh';
+            img.classList.remove('cursor-zoom-out');
+            img.classList.add('cursor-zoom-in');
+
+            viewer.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function toggleQuestionImageZoom() {
+            const img = document.getElementById('questionImageViewerImg');
+            if (!img) return;
+
+            const zoomed = img.classList.contains('cursor-zoom-out');
+
+            if (zoomed) {
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.maxWidth = '95vw';
+                img.style.maxHeight = '92vh';
+                img.classList.remove('cursor-zoom-out');
+                img.classList.add('cursor-zoom-in');
+            } else {
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.maxWidth = 'none';
+                img.style.maxHeight = 'none';
+                img.style.minWidth = '100vw';
+                img.classList.remove('cursor-zoom-in');
+                img.classList.add('cursor-zoom-out');
+            }
+        }
+
+        function closeQuestionImage() {
+            const viewer = document.getElementById('questionImageViewer');
+            if (viewer) viewer.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function openVideoPlayer(url, title, videoKey) {
+            document.getElementById('videoModalTitle').textContent = title;
+            const slot = document.getElementById('videoPlayerSlot');
+            
+            let formattedUrl = url;
+            if (url.includes('youtube.com/watch?v=')) {
+                const videoId = url.split('v=')[1]?.split('&')[0];
+                if (videoId) formattedUrl = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
+            } else if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                if (videoId) formattedUrl = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
+            } else if (url.includes('youtube.com/embed/')) {
+                if (!url.includes('?')) {
+                    formattedUrl = `${url}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
+                } else if (!url.includes('controls=')) {
+                    formattedUrl = `${url}&controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
+                }
+            }
+
+            slot.innerHTML = `<iframe src="${formattedUrl}" class="w-full h-full border-0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+            
+            const modal = document.getElementById('videoModal');
+            modal.classList.remove('hidden');
+
+            if (modal.requestFullscreen) {
+                modal.requestFullscreen().catch(err => console.log(err));
+            } else if (modal.webkitRequestFullscreen) {
+                modal.webkitRequestFullscreen();
+            }
+
+            if (currentStudent && videoKey) {
+                db.ref(`studentStats/${currentStudent.code}/videos/${videoKey}`).set({
+                    title: title,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        function closeVideoModal() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+            document.getElementById('videoModal').classList.add('hidden');
+            document.getElementById('videoPlayerSlot').innerHTML = '';
+        }
+
+        // عرض ملحوظة الأدمن للطالب قبل فتح المحتوى.
+        let pendingStudentContentKey = null;
+
+        window.openStudentContent = function(contentKey) {
+            const item = allContentData[contentKey];
+            if (!item) return;
+
+            const notice = String(item.notice || '').trim();
+            const hiddenNotices = JSON.parse(localStorage.getItem('hiddenNotices') || '{}');
+
+            // لو فيه ملحوظة ولم يطلب الطالب إخفاءها، اعرضها أولاً.
+            if (notice && !hiddenNotices[contentKey]) {
+                pendingStudentContentKey = contentKey;
+                const text = document.getElementById('studentNoticeText');
+                const modal = document.getElementById('studentNoticeModal');
+                if (text && modal) {
+                    text.textContent = notice;
+                    modal.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            continueOpeningStudentContent(contentKey);
+        };
+
+        window.closeStudentNoticeModal = function(dontShowAgain) {
+            const key = pendingStudentContentKey;
+            if (dontShowAgain && key) {
+                const hiddenNotices = JSON.parse(localStorage.getItem('hiddenNotices') || '{}');
+                hiddenNotices[key] = true;
+                localStorage.setItem('hiddenNotices', JSON.stringify(hiddenNotices));
+            }
+
+            const modal = document.getElementById('studentNoticeModal');
+            if (modal) modal.classList.add('hidden');
+
+            pendingStudentContentKey = null;
+
+            // بعد إغلاق الملحوظة، افتح نفس المحتوى الذي ضغط عليه الطالب.
+            if (key) continueOpeningStudentContent(key);
+        };
+
+        function continueOpeningStudentContent(key) {
+            const item = allContentData[key];
+            if (!item) return;
+
+            const displayName = item.displayName || item.title || '-';
+            const esc = String(displayName).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            if (item.type === 'section') {
+                openSubSection(key, displayName);
+            } else if (item.type === 'pdf') {
+                openPdfViewer(item.value || '', displayName);
+            } else if (item.type === 'drive' || item.type === 'link') {
+                if (item.value) window.open(item.value, '_blank');
+            } else if (item.type === 'video' || item.type === 'youtube') {
+                openVideoPlayer(item.value || '', displayName, key);
+            } else if (item.type === 'quiz' || item.type === 'exam') {
+                openExamFromContent(key);
+            } else {
+                const textContent = item.value || item.description || 'لا يوجد تفاصيل نصية لهذا المحتوى';
+                openTextExam(displayName, textContent, key);
+            }
+        }
+
+        window.openSubSection = function(sectionId, sectionTitle) {
+            navigationStack.push(sectionId);
+            currentParentId = sectionId;
+            document.getElementById('currentSectionTitle').textContent = sectionTitle;
+            document.getElementById('backButton').classList.remove('hidden');
+            
+            history.pushState({ step: navigationStack.length, sectionId: currentParentId }, '');
+            renderContentList();
+        }
+
+        // زر الرجوع داخل المنصة: يرجع خطوة واحدة فقط، ولا يقفز للرئيسية
+        window.goBackOneStep = function() {
+            if (navigationStack.length <= 1) return;
+
+            // استخدام History يجعل زر الرجوع داخل الصفحة وزر الرجوع في الموبايل يعملان بنفس المسار
+            history.back();
+        };
+
+        // توافق مع أي استدعاء قديم للدالة
+        window.goToRootSection = window.goBackOneStep;
+
+        function openPricesModal() { document.getElementById('pricesModal').classList.remove('hidden'); }
+        function closePricesModal() { document.getElementById('pricesModal').classList.add('hidden'); }
+        function openRequestCodeModal() { document.getElementById('requestCodeModal').classList.remove('hidden'); }
+        function closeRequestCodeModal() { document.getElementById('requestCodeModal').classList.add('hidden'); }
+        function openProfileModal() { document.getElementById('profileModal').classList.remove('hidden'); }
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+        function openChatModal() { document.getElementById('chatModal').classList.remove('hidden'); }
+        function closeChatModal() { document.getElementById('chatModal').classList.add('hidden'); }
+
+        async function openStatsModal() {
+            closeProfileModal();
+            document.getElementById('statsModal').classList.remove('hidden');
+            const vList = document.getElementById('watchedVideosList');
+            const eList = document.getElementById('examResultsList');
+            vList.innerHTML = '<p class="text-xs text-gray-500 text-center">جاري التحميل...</p>';
+            eList.innerHTML = '<p class="text-xs text-gray-500 text-center">جاري التحميل...</p>';
+
+            try {
+                const snapshot = await db.ref(`studentStats/${currentStudent.code}`).once('value');
+                const stats = snapshot.val() || {};
+
+                vList.innerHTML = '';
+                if (stats.videos) {
+                    Object.values(stats.videos).forEach(v => {
+                        const dateStr = new Date(v.timestamp).toLocaleDateString('ar-EG');
+                        vList.innerHTML += `<div class="p-2 bg-white rounded border flex justify-between items-center text-xs"><span><i class="fas fa-video text-red-500 ml-1"></i>${v.title}</span><span class="text-gray-400">${dateStr}</span></div>`;
+                    });
+                } else {
+                    vList.innerHTML = '<p class="text-xs text-gray-500 text-center">لا توجد مشاهدات مسجلة</p>';
+                }
+
+                eList.innerHTML = '';
+                if (stats.exams) {
+                    Object.values(stats.exams).filter(Boolean).forEach(ex => {
+                        const dateStr = new Date(ex.timestamp).toLocaleDateString('ar-EG');
+                        const scoreText = ex.score !== undefined ? `${ex.score} / ${ex.total}` : (ex.status || 'تم الإرسال');
+                        eList.innerHTML += `<div class="p-2 bg-white rounded border flex justify-between items-center text-xs"><span><i class="fas fa-clipboard-check text-purple-600 ml-1"></i>${ex.examTitle}</span><span class="font-bold text-purple-600">${scoreText}</span></div>`;
+                    });
+                } else {
+                    eList.innerHTML = '<p class="text-xs text-gray-500 text-center">لم تقم بأي اختبارات بعد</p>';
+                }
+            } catch (e) {
+                vList.innerHTML = '<p class="text-xs text-red-500 text-center">خطأ في جلب البيانات</p>';
+                eList.innerHTML = '<p class="text-xs text-red-500 text-center">خطأ في جلب البيانات</p>';
+            }
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').classList.add('hidden');
+        }
+
+        function previewScreenshot(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                screenshotBase64 = e.target.result;
+                document.getElementById('screenshotPreview').src = screenshotBase64;
+                document.getElementById('screenshotPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function submitCodeRequest() {
+            const name = document.getElementById('reqName').value.trim().replace(/\s+/g, ' ');
+            const whatsapp = normalizePhoneNumber(document.getElementById('reqWhatsapp').value);
+            const selectedPackage = document.getElementById('reqPackage').value.trim();
+            const section = document.getElementById('reqSection').value;
+            const vodafoneNumber = normalizePhoneNumber(document.getElementById('reqSenderPhone').value);
+            const screenshotFile = document.getElementById('reqScreenshot')?.files?.[0];
+
+            if (!isValidStudentName(name)) {
+                return showToast('اكتب اسم الطالب بالكامل بشكل صحيح', 'error');
+            }
+
+            if (!isValidEgyptianPhone(whatsapp)) {
+                return showToast('رقم واتساب غير صحيح. يجب أن يكون رقم مصري 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015', 'error');
+            }
+
+            if (!selectedPackage || selectedPackage.includes('جاري تحميل') || selectedPackage === 'لا توجد باقات متاحة') {
+                return showToast('اختر باقة صحيحة أولاً', 'error');
+            }
+
+            if (!['science', 'math', 'arts', 'baccalaureate'].includes(section)) {
+                return showToast('اختر الشعبة بشكل صحيح', 'error');
+            }
+
+            if (!isValidEgyptianPhone(vodafoneNumber)) {
+                return showToast('رقم التحويل غير صحيح. اكتب رقم الهاتف الذي تم التحويل منه بصيغة مصرية صحيحة', 'error');
+            }
+
+            if (!screenshotFile && !screenshotBase64) {
+                return showToast('ارفع سكرين التحويل قبل إرسال الطلب', 'error');
+            }
+
+            if (screenshotFile) {
+                if (!screenshotFile.type.startsWith('image/')) {
+                    return showToast('ملف التحويل يجب أن يكون صورة', 'error');
+                }
+                if (screenshotFile.size > 5 * 1024 * 1024) {
+                    return showToast('حجم سكرين التحويل كبير جداً. الحد الأقصى 5 ميجابايت', 'error');
+                }
+            }
+
+            try {
+                await db.ref('codeRequests').push({
+                    name,
+                    whatsapp,
+                    selectedPackage,
+                    section,
+                    vodafoneNumber,
+                    screenshot: screenshotBase64 || '',
+                    status: 'pending',
+                    timestamp: Date.now()
+                });
+
+                // تنظيف الحقول بعد نجاح الطلب.
+                document.getElementById('reqName').value = '';
+                document.getElementById('reqWhatsapp').value = '';
+                document.getElementById('reqSenderPhone').value = '';
+                document.getElementById('reqScreenshot').value = '';
+                screenshotBase64 = '';
+                const preview = document.getElementById('screenshotPreview');
+                if (preview) {
+                    preview.src = '';
+                    preview.classList.add('hidden');
+                }
+
+                showToast('تم إرسال طلب الدفع والبيانات بنجاح ✅', 'success');
+                closeRequestCodeModal();
+            } catch(e) {
+                console.error(e);
+                showToast('خطأ أثناء إرسال طلب الدفع: ' + e.message, 'error');
+            }
+        }
+
+        function sendStudentMessage() {
+            const input = document.getElementById('chatMessageInput');
+            const message = input.value.trim();
+            if (!message || !currentStudent) return;
+
+            db.ref('chats').push().set({
+                studentId: currentStudent.deviceId,
+                studentName: currentStudent.name,
+                senderId: currentStudent.deviceId,
+                senderName: currentStudent.name,
+                message: message,
+                timestamp: Date.now(),
+                read: false
+            }).then(() => {
+                input.value = '';
+            });
+        }
+
+        function listenToStudentChats() {
+            if (!currentStudent) return;
+            db.ref('chats').on('value', (snapshot) => {
+                const container = document.getElementById('chatMessagesContainer');
+                container.innerHTML = '';
+                const data = snapshot.val() || {};
+                let hasMsgs = false;
+
+                Object.values(data).filter(Boolean).forEach(msg => {
+                    if (msg.studentId === currentStudent.deviceId) {
+                        hasMsgs = true;
+                        const isAdmin = msg.senderId === 'admin';
+                        const time = new Date(msg.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+                        container.innerHTML += `
+                            <div class="flex ${isAdmin ? 'justify-start' : 'justify-end'}">
+                                <div class="max-w-[75%] p-3 rounded-2xl ${isAdmin ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800'} shadow-sm">
+                                    <p class="text-sm font-bold text-xs opacity-70 mb-1">${isAdmin ? 'الأدمن' : 'أنت'}</p>
+                                    <p class="text-sm">${msg.message}</p>
+                                    <p class="text-[10px] mt-1 opacity-70 text-left">${time}</p>
+                                </div>
+                            </div>`;
+                    }
+                });
+
+                if (!hasMsgs) {
+                    container.innerHTML = '<p class="text-center text-gray-400 text-xs py-4">أرسل رسالتك وسيرد عليك الأدمن قريباً</p>';
+                }
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        window.onload = checkExistingSession;
+    </script>
+
+    <!-- نافذة ملحوظة الأدمن للطالب -->
+    <div id="studentNoticeModal" class="hidden fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border-4 border-yellow-400 overflow-hidden text-right">
+            <div class="p-5 bg-yellow-50 border-b border-yellow-200 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-2xl">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-lg text-yellow-900">تنبيه هام</h3>
+                    <p class="text-xs text-gray-500">ملحوظة من الأدمن</p>
+                </div>
+            </div>
+            <div id="studentNoticeText" class="p-5 text-gray-800 leading-7 whitespace-pre-wrap"></div>
+            <div class="p-4 border-t bg-gray-50 space-y-2">
+                <button type="button" onclick="closeStudentNoticeModal(false)" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold">حسنًا، فهمت</button>
+                <button type="button" onclick="closeStudentNoticeModal(true)" class="w-full bg-white border p-2.5 rounded-xl font-bold text-xs text-gray-600">عدم الظهور مرة أخرى</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
