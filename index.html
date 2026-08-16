@@ -51,10 +51,21 @@
             font-size: 16px;
             font-weight: bold;
             pointer-events: none;
-            animation: floatWatermark 15s infinite linear;
             white-space: nowrap;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
             box-shadow: none !important;
+            transition: opacity .45s ease, top .35s ease, left .35s ease;
+        }
+        .video-watermark.watermark-hidden { opacity: 0 !important; }
+        @media(max-width:768px){
+            .video-watermark{font-size:13px}
+            #mainApp header{padding-left:12px!important;padding-right:12px!important}
+            #mainApp main{padding:16px!important}
+        }
+        @media(max-width:480px){
+            .video-watermark{font-size:11px}
+            #mainApp main{padding:12px!important}
+            #currentSectionTitle{font-size:16px!important}
         }
 
         body {
@@ -160,6 +171,12 @@
 <style id="final-payment-fix">
 #requestCodeModal{overflow-y:auto!important;overscroll-behavior:contain}
 #requestCodeModal>.full-page-modal{max-height:100dvh!important;overflow-y:auto!important}
+
+        @media(max-width:640px){
+            #examReviewModal > div{max-height:94vh;padding:14px!important}
+            #studentNotificationsModal > div{max-height:90vh}
+            #examModal .bg-white{padding:14px!important}
+        }
 </style>
 </head>
 <body class="text-gray-800 flex items-center justify-center min-h-screen p-0" oncontextmenu="return false;">
@@ -207,10 +224,17 @@
                 <h1 class="text-xl font-bold"><i class="fas fa-crown text-yellow-400 ml-2"></i>دروسك بلس</h1>
                 <span id="headerStudentSection" class="bg-purple-700 text-purple-200 text-xs font-bold px-3 py-1 rounded-full border border-purple-500">جاري التحميل...</span>
             </div>
-            <button type="button" onclick="openStudentProfile()" title="الملف الشخصي"
-                class="w-11 h-11 bg-purple-700 hover:bg-purple-600 rounded-full flex items-center justify-center text-white border border-purple-400 transition shadow">
-                <i class="fas fa-user-circle text-2xl"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="openStudentNotifications()" title="الإشعارات"
+                    class="relative w-11 h-11 bg-purple-700 hover:bg-purple-600 rounded-full flex items-center justify-center text-white border border-purple-400 transition shadow">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span id="studentNotificationBadge" class="hidden absolute -top-1 -left-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center border-2 border-purple-900">0</span>
+                </button>
+                <button type="button" onclick="openStudentProfile()" title="الملف الشخصي"
+                    class="w-11 h-11 bg-purple-700 hover:bg-purple-600 rounded-full flex items-center justify-center text-white border border-purple-400 transition shadow">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </button>
+            </div>
         </header>
 
         <main class="flex-1 p-6 md:p-10 w-full max-w-7xl mx-auto">
@@ -251,6 +275,19 @@
                 <button onclick="logoutStudent()" class="w-full bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>تسجيل الخروج
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إشعارات الطالب -->
+    <div id="studentNotificationsModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9998] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-purple-900 text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i class="fas fa-bell"></i>الإشعارات</h3>
+                <button onclick="closeStudentNotifications()" class="text-white text-xl font-bold">&times;</button>
+            </div>
+            <div id="studentNotificationsList" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                <p class="text-center text-gray-500 text-sm py-8">لا توجد إشعارات حالياً</p>
             </div>
         </div>
     </div>
@@ -406,6 +443,18 @@
         </div>
     </div>
 
+    <!-- نافذة مراجعة إجابات الاختبار -->
+    <div id="examReviewModal" class="fixed inset-0 bg-black bg-opacity-70 z-[10001] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 id="examReviewTitle" class="font-bold text-lg text-purple-950">مراجعة الإجابات</h3>
+                <button onclick="closeExamReview()" class="text-gray-500 text-xl font-bold">&times;</button>
+            </div>
+            <div id="examReviewBody" class="space-y-3"></div>
+            <button onclick="closeExamReview()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-xl font-bold">إغلاق</button>
+        </div>
+    </div>
+
     <!-- نافذة تشغيل الفيديو -->
     <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center p-0">
         <div class="relative w-full h-full bg-black flex flex-col justify-center">
@@ -414,7 +463,7 @@
                 <button onclick="closeVideoModal()" class="text-red-400 hover:text-red-300 text-2xl font-bold px-3">&times;</button>
             </div>
             <div class="relative w-full flex-1 bg-black flex items-center justify-center overflow-hidden">
-                <div id="videoWatermarkBox" class="video-watermark">طالب: - | كود: -</div>
+                <div id="videoWatermarkBox" class="video-watermark">-</div>
                 <div id="videoPlayerSlot" class="w-full h-full flex items-center justify-center"></div>
             </div>
         </div>
@@ -447,6 +496,7 @@
         let activeMcqCurrentIndex = 0;
         let activeMcqTimerInterval = null;
         let activeMcqTimeLeft = 0;
+        let watermarkInterval = null;
         let studentFavorites = {};
         let currentProfileSection = 'profile';
         let codeStatusListener = null;
@@ -457,8 +507,9 @@
 
         // الأسعار تأتي من نفس المسار الذي يحفظه كود الأدمن: settings/prices
         let studentPriceSettings = {
-            month: { enabled: true, price: 200, duration: 30, description: '30 يوم' },
-            term: { enabled: true, price: 500, duration: 90, description: 'حتى شهر 1' },
+            month: { enabled: true, price: 200, duration: 30, description: '30 يوم - عام فقط' },
+            monthAzhar: { enabled: true, price: 200, duration: 30, description: '30 يوم - أزهر' },
+            term: { enabled: true, price: 500, duration: 90, description: 'حتى شهر 1 - عام وأزهر' },
             year: { enabled: true, price: 900, duration: 365, description: 'شاملة المراجعات النهائية' }
         };
 
@@ -473,44 +524,29 @@
             if (!select) return;
 
             const labels = {
-                month: 'شهر (30 يوم)',
-                term: 'ترم',
-                year: 'سنوية'
+                month: 'باقة الشهر (عام فقط)',
+                monthAzhar: 'باقة الشهر (ازهر)',
+                term: 'باقة الترم (عام وازهر)',
+                year: 'الباقة السنوية'
             };
 
-            const previousKey = (() => {
-                const value = select.value || '';
-                if (value.includes('شهر')) return 'month';
-                if (value.includes('ترم')) return 'term';
-                if (value.includes('سنوية')) return 'year';
-                return '';
-            })();
-
+            const previousValue = select.value || '';
             select.innerHTML = '';
             Object.entries(studentPriceSettings || {}).forEach(([key, item]) => {
                 if (!item || item.enabled === false) return;
                 const price = Number(item.price) || 0;
                 const duration = Number(item.duration) || 0;
-                const value = key === 'month' ? `شهر (${price} ج)`
-                    : key === 'term' ? `ترم (${price} ج)`
-                    : `سنوية (${price} ج)`;
-                const durationText = duration ? ` (${duration} يوم)` : '';
-                select.innerHTML += `<option value="${escapePriceText(value)}">${labels[key]}${durationText} - ${price} ج</option>`;
+                const value = `${labels[key] || key} (${price} ج)`;
+                const durationText = duration ? ` - ${duration} يوم` : '';
+                select.innerHTML += `<option value="${escapePriceText(value)}">${escapePriceText(value)}${durationText}</option>`;
             });
 
             if (!select.options.length) {
                 select.innerHTML = '<option value="">لا توجد باقات متاحة</option>';
                 return;
             }
-
-            if (previousKey && studentPriceSettings[previousKey] && studentPriceSettings[previousKey].enabled !== false) {
-                const wanted = Number(studentPriceSettings[previousKey].price) || 0;
-                const wantedValue = previousKey === 'month' ? `شهر (${wanted} ج)`
-                    : previousKey === 'term' ? `ترم (${wanted} ج)`
-                    : `سنوية (${wanted} ج)`;
-                const idx = Array.from(select.options).findIndex(o => o.value === wantedValue);
-                if (idx >= 0) select.selectedIndex = idx;
-            }
+            const idx = Array.from(select.options).findIndex(o => o.value === previousValue);
+            if (idx >= 0) select.selectedIndex = idx;
         }
 
         function renderStudentPrices() {
@@ -520,13 +556,13 @@
 
             const p = studentPriceSettings || {};
             const packages = [
-                { key: 'month', icon: 'fa-calendar-alt', color: 'purple', title: 'باقة شهر' },
-                { key: 'term', icon: 'fa-book-reader', color: 'purple', title: 'باقة الترم' },
+                { key: 'month', icon: 'fa-calendar-alt', color: 'purple', title: 'باقة الشهر (عام فقط)' },
+                { key: 'monthAzhar', icon: 'fa-calendar-alt', color: 'purple', title: 'باقة الشهر (ازهر)' },
+                { key: 'term', icon: 'fa-book-reader', color: 'purple', title: 'باقة الترم (عام وازهر)' },
                 { key: 'year', icon: 'fa-star', color: 'amber', title: 'الباقة السنوية' }
             ];
 
             const visible = packages.filter(x => p[x.key] && p[x.key].enabled !== false);
-
             if (!visible.length) {
                 list.innerHTML = '<p class="text-center text-gray-500 py-6">لا توجد باقات متاحة حالياً.</p>';
                 return;
@@ -539,21 +575,16 @@
                 const price = Number(item.price) || 0;
                 const desc = escapePriceText(item.description || (duration ? `${duration} يوم` : ''));
                 const packageValue = encodeURIComponent(`${pkg.key}|${price}`);
-
                 return `
                     <div class="p-4 bg-gray-50 rounded-xl border flex flex-col gap-3">
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center gap-3">
                             <div>
-                                <p class="font-bold text-purple-900 text-base">
-                                    <i class="fas ${pkg.icon} ${pkg.color === 'amber' ? 'text-amber-500' : 'text-purple-600'} ml-1"></i>${title}${duration ? ` (${duration} يوم)` : ''}
-                                </p>
+                                <p class="font-bold text-purple-900 text-base"><i class="fas ${pkg.icon} ${pkg.color === 'amber' ? 'text-amber-500' : 'text-purple-600'} ml-1"></i>${title}${duration ? ` (${duration} يوم)` : ''}</p>
                                 <p class="text-xs text-gray-500">${desc}</p>
                             </div>
-                            <span class="bg-purple-100 text-purple-700 font-bold px-3 py-1.5 rounded-lg text-base">${price} ج</span>
+                            <span class="bg-purple-100 text-purple-700 font-bold px-3 py-1.5 rounded-lg text-base whitespace-nowrap">${price} ج</span>
                         </div>
-                        <button onclick="selectPackageAndRequest('${packageValue}')" class="w-full ${pkg.color === 'amber' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-purple-600 hover:bg-purple-700'} text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1">
-                            <i class="fas fa-check-circle"></i>اشتراك الآن
-                        </button>
+                        <button onclick="selectPackageAndRequest('${packageValue}')" class="w-full ${pkg.color === 'amber' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-purple-600 hover:bg-purple-700'} text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1"><i class="fas fa-check-circle"></i>اشتراك الآن</button>
                     </div>`;
             }).join('');
         }
@@ -562,8 +593,10 @@
         db.ref('settings/prices').on('value', snapshot => {
             const data = snapshot.val();
             if (data) {
+                const monthAzharData = data.monthAzhar || {};
                 studentPriceSettings = {
                     month: { ...studentPriceSettings.month, ...(data.month || {}) },
+                    monthAzhar: { ...studentPriceSettings.monthAzhar, ...(!data.monthAzhar && data.month ? { price: data.month.price, duration: data.month.duration, description: '30 يوم - أزهر' } : {}), ...monthAzharData },
                     term: { ...studentPriceSettings.term, ...(data.term || {}) },
                     year: { ...studentPriceSettings.year, ...(data.year || {}) }
                 };
@@ -654,9 +687,10 @@
 
             const price = Number(item.price) || 0;
             const labels = {
-                month: `شهر (${price} ج)`,
-                term: `ترم (${price} ج)`,
-                year: `سنوية (${price} ج)`
+                month: `باقة الشهر (عام فقط) (${price} ج)`,
+                monthAzhar: `باقة الشهر (ازهر) (${price} ج)`,
+                term: `باقة الترم (عام وازهر) (${price} ج)`,
+                year: `الباقة السنوية (${price} ج)`
             };
 
             const targetValue = labels[key];
@@ -678,9 +712,10 @@
                     if (!pkg || pkg.enabled === false) return;
                     const pkgPrice = Number(pkg.price) || 0;
                     const value = labels[k] || `${k} (${pkgPrice} ج)`;
-                    const text = k === 'month' ? `شهر (30 يوم) - ${pkgPrice} ج`
-                        : k === 'term' ? `ترم - ${pkgPrice} ج`
-                        : `سنوية - ${pkgPrice} ج`;
+                    const text = k === 'month' ? `باقة الشهر (عام فقط) - ${pkgPrice} ج`
+                        : k === 'monthAzhar' ? `باقة الشهر (ازهر) - ${pkgPrice} ج`
+                        : k === 'term' ? `باقة الترم (عام وازهر) - ${pkgPrice} ج`
+                        : `الباقة السنوية - ${pkgPrice} ج`;
                     select.innerHTML += `<option value="${escapePriceText(value)}">${escapePriceText(text)}</option>`;
                 });
 
@@ -1029,6 +1064,11 @@
                 db.ref('codes/' + currentStudent.code).off('value', codeStatusListener);
                 codeStatusListener = null;
             }
+            if (studentNotificationListener) {
+                db.ref('notifications').off('value', studentNotificationListener);
+                studentNotificationListener = null;
+            }
+            studentNotifications = {};
             localStorage.removeItem('studentSession');
             currentStudent = null;
             document.getElementById('mainApp').classList.add('hidden');
@@ -1038,6 +1078,51 @@
         function getSectionName(sec) {
             const names = { science: 'علمي علوم', math: 'علمي رياضة', arts: 'أدبي', baccalaureate: 'باكلوريا', all: 'عام' };
             return names[sec] || sec;
+        }
+
+        let studentNotificationListener = null;
+        let studentNotifications = {};
+
+        function notificationTargetsStudent(n) {
+            if (!n || n.active === false) return false;
+            if (!currentStudent) return false;
+            if (n.target === 'all' || !n.target) return true;
+            if (n.code && String(n.code) === String(currentStudent.code)) return true;
+            if (n.studentCode && String(n.studentCode) === String(currentStudent.code)) return true;
+            if (n.section && (n.section === currentStudent.section || n.section === 'all')) return true;
+            return false;
+        }
+
+        function renderStudentNotifications() {
+            const list = document.getElementById('studentNotificationsList');
+            const badge = document.getElementById('studentNotificationBadge');
+            const arr = Object.entries(studentNotifications || {}).filter(([,n]) => notificationTargetsStudent(n)).sort((a,b)=>(Number(b[1].timestamp)||0)-(Number(a[1].timestamp)||0));
+            if (badge) { badge.textContent = String(arr.length); badge.classList.toggle('hidden', arr.length === 0); badge.classList.toggle('flex', arr.length > 0); }
+            if (!list) return;
+            if (!arr.length) { list.innerHTML = '<p class="text-center text-gray-500 text-sm py-8">لا توجد إشعارات حالياً</p>'; return; }
+            list.innerHTML = arr.map(([id,n]) => {
+                const date = n.timestamp ? new Date(n.timestamp).toLocaleString('ar-EG') : '';
+                return `<div class="bg-white border rounded-xl p-4 shadow-sm"><div class="font-bold text-purple-900">${escapeHtml(n.title || 'إشعار')}</div><div class="text-sm text-gray-700 mt-2 leading-7 whitespace-pre-wrap">${escapeHtml(n.message || n.text || '')}</div><div class="text-[10px] text-gray-400 mt-2">${escapeHtml(date)}</div></div>`;
+            }).join('');
+        }
+
+        function listenToStudentNotifications() {
+            if (!currentStudent) return;
+            if (studentNotificationListener) db.ref('notifications').off('value', studentNotificationListener);
+            studentNotificationListener = snapshot => {
+                studentNotifications = snapshot.val() || {};
+                renderStudentNotifications();
+            };
+            db.ref('notifications').on('value', studentNotificationListener);
+        }
+
+        function openStudentNotifications() {
+            renderStudentNotifications();
+            document.getElementById('studentNotificationsModal').classList.remove('hidden');
+        }
+
+        function closeStudentNotifications() {
+            document.getElementById('studentNotificationsModal').classList.add('hidden');
         }
 
         function initApp() {
@@ -1059,7 +1144,7 @@
 
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('videoWatermarkBox').innerHTML = `${currentStudent.name} &bull; ${currentStudent.code}`;
+            document.getElementById('videoWatermarkBox').textContent = currentStudent.code;
             document.getElementById('modalStudentCode').textContent = currentStudent.code;
             document.getElementById('modalStudentSection').textContent = getSectionName(currentStudent.section);
             
@@ -1075,6 +1160,7 @@
 
             renderContentList();
             listenToStudentChats();
+            listenToStudentNotifications();
             monitorStudentCodeStatus(); // تفعيل المراقبة اللحظية لصلاحية الكود
         }
 
@@ -1366,22 +1452,57 @@
                 }
             });
 
-            const percentage = Math.round((score / total) * 100);
+            const percentage = total ? Math.round((score / total) * 100) : 0;
+            const review = activeMcqQuestions.map((q, idx) => ({
+                question: q.text,
+                questionImage: q.image || '',
+                options: q.options,
+                selected: activeMcqAnswers[idx] ?? null,
+                correct: q.correct
+            }));
 
-            try {
-                await db.ref(`studentStats/${currentStudent.code}/exams/${activeExamData.key}`).set({
-                    examTitle: activeExamData.title,
-                    score: score,
-                    total: total,
-                    percentage: percentage,
-                    status: 'تم التصحيح تلقائياً',
-                    timestamp: Date.now()
-                });
-                showToast(`تم إنهاء الاختبار بنجاح! درجتك: ${score} من ${total} (${percentage}%)`, 'success');
-                closeExamModal();
-            } catch (e) {
-                showToast('خطأ في حفظ نتيجة الاختبار', 'error');
+            const examKey = activeExamData && activeExamData.key;
+            const examTitle = activeExamData && activeExamData.title ? activeExamData.title : 'الاختبار';
+            const resultData = {
+                examTitle: examTitle, score, total, percentage,
+                status: 'تم التصحيح تلقائياً', timestamp: Date.now(), review
+            };
+
+            // اعرض النتيجة والمراجعة فورًا، ثم احفظها في Firebase.
+            closeExamModal();
+            openExamReview(examTitle, review, score, total);
+            showToast(`تم إنهاء الاختبار بنجاح! درجتك: ${score} من ${total} (${percentage}%)`, 'success');
+
+            if (examKey && currentStudent && currentStudent.code) {
+                try {
+                    await db.ref(`studentStats/${currentStudent.code}/exams/${examKey}`).set(resultData);
+                } catch (e) {
+                    console.error('Exam result save error:', e);
+                }
             }
+        }
+
+        function openExamReview(title, review, score, total) {
+            const modal = document.getElementById('examReviewModal');
+            const body = document.getElementById('examReviewBody');
+            document.getElementById('examReviewTitle').textContent = `${title} - مراجعة الإجابات (${score}/${total})`;
+            body.innerHTML = (review || []).map((r, i) => {
+                const selected = r.selected === null || r.selected === undefined ? -1 : Number(r.selected);
+                const correct = Number(r.correct);
+                const isCorrect = selected === correct;
+                const selectedText = selected >= 0 && r.options[selected] !== undefined ? r.options[selected] : 'لم يتم اختيار إجابة';
+                const correctText = r.options[correct] !== undefined ? r.options[correct] : 'غير محددة';
+                return `<div class="p-4 rounded-xl border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                    <div class="font-bold text-gray-900 mb-2">${i+1}) ${escapeHtml(r.question || '')}</div>
+                    <div class="text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}"><b>إجابتك:</b> ${escapeHtml(selectedText)}</div>
+                    ${isCorrect ? '<div class="text-sm text-green-700 mt-1 font-bold">✓ إجابة صحيحة</div>' : `<div class="text-sm text-emerald-700 mt-1 font-bold">الإجابة الصحيحة: ${escapeHtml(correctText)}</div>`}
+                </div>`;
+            }).join('');
+            modal.classList.remove('hidden');
+        }
+
+        function closeExamReview() {
+            document.getElementById('examReviewModal').classList.add('hidden');
         }
 
         async function submitExamTextAnswer() {
@@ -1855,48 +1976,83 @@
             document.body.style.overflow = '';
         }
 
+        function startVideoWatermarkCycle() {
+            const wm = document.getElementById('videoWatermarkBox');
+            const modal = document.getElementById('videoModal');
+            if (!wm || !modal || !currentStudent) return;
+            if (watermarkInterval) clearTimeout(watermarkInterval);
+
+            wm.textContent = currentStudent.code;
+            wm.classList.remove('watermark-hidden');
+            const positions = [
+                {top:'12%',left:'12%'},{top:'72%',left:'68%'},{top:'38%',left:'78%'},
+                {top:'78%',left:'20%'},{top:'18%',left:'52%'},{top:'55%',left:'10%'}
+            ];
+            let index = Math.floor(Math.random() * positions.length);
+
+            const scheduleNext = () => {
+                if (modal.classList.contains('hidden')) return;
+                // يظل الكود ظاهرًا من دقيقة إلى دقيقتين قبل نقله لمكان آخر.
+                const delay = 60000 + Math.floor(Math.random() * 60001);
+                watermarkInterval = setTimeout(() => {
+                    if (modal.classList.contains('hidden')) return;
+                    wm.classList.add('watermark-hidden');
+                    setTimeout(() => {
+                        if (modal.classList.contains('hidden')) return;
+                        let nextIndex = Math.floor(Math.random() * positions.length);
+                        if (positions.length > 1 && nextIndex === index) nextIndex = (nextIndex + 1) % positions.length;
+                        index = nextIndex;
+                        const pos = positions[index];
+                        wm.style.top = pos.top;
+                        wm.style.left = pos.left;
+                        wm.classList.remove('watermark-hidden');
+                        scheduleNext();
+                    }, 1200);
+                }, delay);
+            };
+
+            const first = positions[index];
+            wm.style.top = first.top;
+            wm.style.left = first.left;
+            scheduleNext();
+        }
+
         function openVideoPlayer(url, title, videoKey) {
             document.getElementById('videoModalTitle').textContent = title;
             const slot = document.getElementById('videoPlayerSlot');
-            
-            let formattedUrl = url;
-            if (url.includes('youtube.com/watch?v=')) {
-                const videoId = url.split('v=')[1]?.split('&')[0];
-                if (videoId) formattedUrl = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
-            } else if (url.includes('youtu.be/')) {
-                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-                if (videoId) formattedUrl = `https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
-            } else if (url.includes('youtube.com/embed/')) {
-                if (!url.includes('?')) {
-                    formattedUrl = `${url}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
-                } else if (!url.includes('controls=')) {
-                    formattedUrl = `${url}&controls=1&modestbranding=1&rel=0&iv_load_policy=3`;
+            const rawUrl = String(url || '').trim();
+            let formattedUrl = rawUrl;
+
+            // دعم كل صيغ روابط يوتيوب الشائعة.
+            try {
+                const parsed = new URL(rawUrl);
+                let videoId = '';
+                if (parsed.hostname.includes('youtu.be')) {
+                    videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
+                } else if (parsed.hostname.includes('youtube.com')) {
+                    if (parsed.pathname === '/watch') videoId = parsed.searchParams.get('v') || '';
+                    else if (parsed.pathname.startsWith('/embed/')) videoId = parsed.pathname.split('/embed/')[1].split('/')[0];
+                    else if (parsed.pathname.startsWith('/shorts/')) videoId = parsed.pathname.split('/shorts/')[1].split('/')[0];
                 }
+                if (videoId) {
+                    formattedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?controls=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`;
+                }
+            } catch (e) {
+                // اترك الرابط الأصلي إذا لم يكن URL صالحًا.
             }
 
-            slot.innerHTML = `<iframe src="${formattedUrl}" class="w-full h-full border-0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-            
+            slot.innerHTML = `<iframe src="${escapeHtml(formattedUrl)}" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
             const modal = document.getElementById('videoModal');
             modal.classList.remove('hidden');
-
-            if (modal.requestFullscreen) {
-                modal.requestFullscreen().catch(err => console.log(err));
-            } else if (modal.webkitRequestFullscreen) {
-                modal.webkitRequestFullscreen();
-            }
-
-            if (currentStudent && videoKey) {
-                db.ref(`studentStats/${currentStudent.code}/videos/${videoKey}`).set({
-                    title: title,
-                    timestamp: Date.now()
-                });
-            }
+            startVideoWatermarkCycle();
+            if (modal.requestFullscreen) modal.requestFullscreen().catch(err => console.log(err));
+            else if (modal.webkitRequestFullscreen) modal.webkitRequestFullscreen();
+            if (currentStudent && videoKey) db.ref(`studentStats/${currentStudent.code}/videos/${videoKey}`).set({title: title,timestamp: Date.now()});
         }
 
         function closeVideoModal() {
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(err => console.log(err));
-            }
+            if (watermarkInterval) { clearTimeout(watermarkInterval); watermarkInterval = null; }
+            if (document.fullscreenElement) document.exitFullscreen().catch(err => console.log(err));
             document.getElementById('videoModal').classList.add('hidden');
             document.getElementById('videoPlayerSlot').innerHTML = '';
         }
@@ -2357,12 +2513,12 @@
     if(!db){box.innerHTML='<div class="nc-empty">تعذر الاتصال بقاعدة البيانات.</div>';return;}
     db.ref('settings/prices').once('value').then(snap=>{
       const p=snap.val()||{};
-      const names=[['month','باقة الشهر'],['term','باقة الترم'],['year','الباقة السنوية']];
+      const names=[['month','باقة الشهر (عام فقط)'],['monthAzhar','باقة الشهر (ازهر)'],['term','باقة الترم (عام وازهر)'],['year','الباقة السنوية']];
       const arr=names.map(([k,n])=>({k,n,v:p[k]})).filter(x=>x.v && x.v.enabled!==false);
       if(!arr.length){box.innerHTML='<div class="nc-empty">لا توجد باقات متاحة حاليًا.</div>';return;}
       box.innerHTML=arr.map(x=>{
         const v=x.v||{};
-        const icon = x.k==='month' ? 'fa-calendar-days' : (x.k==='term' ? 'fa-layer-group' : 'fa-crown');
+        const icon = (x.k==='month' || x.k==='monthAzhar') ? 'fa-calendar-days' : (x.k==='term' ? 'fa-layer-group' : 'fa-crown');
         const iconClass = x.k==='month' ? 'plan-month' : (x.k==='term' ? 'plan-term' : 'plan-year');
         return `<div class="nc-price text-right" style="align-items:center;gap:14px">
           <div style="display:flex;gap:13px;align-items:center;flex:1;min-width:0">
